@@ -129,7 +129,6 @@ public class Main {
         Map<String, String> config = new HashMap<>();
         config.put("gptLoadUrl", AppConfig.GPT_LOAD_BASE_URL);
         config.put("newApiUrl", AppConfig.NEW_API_BASE_URL);
-        config.put("databasePath", AppConfig.DATABASE_PATH);
         status.put("config", config);
 
         ctx.json(status);
