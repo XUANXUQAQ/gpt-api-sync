@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto p-4 md:p-8">
+  <WelcomeGuide v-if="isFirstTime" @configured="handleConfigured" />
+  <div v-else class="container mx-auto p-4 md:p-8">
     <header class="mb-8 flex justify-between items-center">
       <div class="text-center flex-grow">
         <h1 class="text-4xl font-bold tracking-tight">GPT-API 同步服务</h1>
@@ -21,13 +22,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { isFirstStartup } from '@/lib/api';
 import HealthCard from '@/components/HealthCard.vue';
 import SyncAction from '@/components/SyncAction.vue';
 import ApiInfoCards from '@/components/ApiInfoCards.vue';
 import SettingsDialog from '@/components/SettingsDialog.vue';
+import WelcomeGuide from '@/components/WelcomeGuide.vue';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-vue-next';
 
 const showSettings = ref(false);
+const isFirstTime = ref<boolean | null>(null);
+
+const checkFirstStartup = async () => {
+  try {
+    const first = await isFirstStartup();
+    isFirstTime.value = first === 'true';
+  } catch (error) {
+    console.error('Failed to check first startup:', error);
+    // In case of error, assume it's not the first time to avoid blocking the app
+    isFirstTime.value = false;
+  }
+};
+
+const handleConfigured = () => {
+  isFirstTime.value = false;
+  // Optionally, you can reload the page to ensure all components get the new config
+  window.location.reload();
+};
+
+onMounted(checkFirstStartup);
 </script>

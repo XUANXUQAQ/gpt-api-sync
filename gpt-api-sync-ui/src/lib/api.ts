@@ -28,3 +28,12 @@ export const updateConfig = (config: any) =>
 
 export const syncChannels = () =>
   fetch(`${baseUrl}/sync`, { method: "POST" }).then(handleResponse);
+
+export const isFirstStartup = () =>
+  fetch(`${baseUrl}/first`).then(async (response) => {
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Network response was not ok: ${errorText}`);
+    }
+    return response.text();
+  });
