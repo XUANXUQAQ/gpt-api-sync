@@ -14,7 +14,8 @@ public class ChannelMapperService {
         }
 
         NewApiChannel newApiChannel = new NewApiChannel();
-        newApiChannel.setName(gptLoadGroup.getDisplayName() == null ? gptLoadGroup.getName() : gptLoadGroup.getDisplayName());
+        newApiChannel.setName(gptLoadGroup.getDisplayName() == null || gptLoadGroup.getDisplayName().isBlank() ?
+                gptLoadGroup.getName() : gptLoadGroup.getDisplayName());
         newApiChannel.setBaseUrl(gptLoadGroup.getEndpoint());
         newApiChannel.setModels(gptLoadGroup.getTestModel());
         newApiChannel.setGroupName("default"); // 使用默认group
