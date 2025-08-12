@@ -110,4 +110,8 @@ const fetchApiData = async () => {
 };
 
 onMounted(fetchApiData);
+
+defineExpose({
+  fetchApiData,
+});
 </script>

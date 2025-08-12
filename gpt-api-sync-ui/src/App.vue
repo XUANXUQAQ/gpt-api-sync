@@ -13,9 +13,9 @@
     <main class="space-y-8 max-w-4xl mx-auto">
       <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         <HealthCard class="lg:col-span-1" />
-        <SyncAction class="lg:col-span-2" />
+        <SyncAction class="lg:col-span-2" @sync-completed="handleSyncCompleted" />
       </div>
-      <ApiInfoCards />
+      <ApiInfoCards ref="apiInfoCardsRef" />
     </main>
     <SettingsDialog v-model:open="showSettings" />
   </div>
@@ -34,6 +34,7 @@ import { Settings } from 'lucide-vue-next';
 
 const showSettings = ref(false);
 const isFirstTime = ref<boolean | null>(null);
+const apiInfoCardsRef = ref<{ fetchApiData: () => void } | null>(null);
 
 const checkFirstStartup = async () => {
   const hasConfigured = localStorage.getItem('hasConfigured');
@@ -56,6 +57,12 @@ const handleConfigured = () => {
   isFirstTime.value = false;
   // Optionally, you can reload the page to ensure all components get the new config
   window.location.reload();
+};
+
+const handleSyncCompleted = () => {
+  if (apiInfoCardsRef.value) {
+    apiInfoCardsRef.value.fetchApiData();
+  }
 };
 
 onMounted(checkFirstStartup);

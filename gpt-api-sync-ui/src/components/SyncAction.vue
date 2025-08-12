@@ -68,6 +68,8 @@ const message = ref<string | null>(null);
 const error = ref<string | null>(null);
 const isLoading = ref(false);
 
+const emit = defineEmits(['sync-completed']);
+
 const handleSync = async () => {
   isLoading.value = true;
   try {
@@ -76,6 +78,7 @@ const handleSync = async () => {
     const responseData = await syncChannels();
     if (responseData.success) {
       message.value = `${responseData.message} (耗时: ${responseData.duration_ms}ms, 新增: ${responseData.channels_created}, 更新: ${responseData.channels_updated}, 失败: ${responseData.channels_failed}, 获取分组: ${responseData.groups_fetched})`;
+      emit('sync-completed');
     } else {
       message.value = `同步未完全成功: ${responseData.message}`;
     }
