@@ -27,10 +27,10 @@ public class ChannelMapperService {
         }
 
         NewApiChannel newApiChannel = new NewApiChannel();
-        newApiChannel.setName(gptLoadGroup.getName());
+        newApiChannel.setName(gptLoadGroup.getDisplayName() == null ? gptLoadGroup.getName() : gptLoadGroup.getDisplayName());
         newApiChannel.setBaseUrl(gptLoadGroup.getEndpoint());
         newApiChannel.setModels(gptLoadGroup.getTestModel());
-        newApiChannel.setGroupName(gptLoadGroup.getName()); // 使用 gpt-load 的 group name 作为 new-api 的 group
+        newApiChannel.setGroupName("default"); // 使用默认group
         // 根据 gpt-load 的 channel_type 映射 new-api 的 type
         switch (gptLoadGroup.getChannelType()) {
             case "openai":
