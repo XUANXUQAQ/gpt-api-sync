@@ -124,7 +124,7 @@ public class NewApiService {
         }
 
         try {
-            String url = newApiBaseUrl + "/api/channel/";
+            String url = newApiBaseUrl + "/api/channel/" + channel.getId();
 
             Map<String, Object> channelData = buildChannelData(channel);
             String jsonBody = gson.toJson(channelData);
@@ -163,39 +163,6 @@ public class NewApiService {
         }
     }
 
-    /**
-     * 批量同步渠道（创建或更新）
-     *
-     * @param channels 渠道列表
-     * @return 同步结果统计
-     */
-    public Map<String, Integer> syncChannels(List<NewApiChannel> channels) {
-        Map<String, Integer> result = new HashMap<>();
-        int successCount = 0;
-        int failureCount = 0;
-
-        for (NewApiChannel channel : channels) {
-            boolean success = createChannel(channel); // 先尝试创建
-            if (!success) {
-                success = updateChannel(channel); // 创建失败则尝试更新
-            }
-
-            if (success) {
-                successCount++;
-            } else {
-                failureCount++;
-            }
-        }
-
-        result.put("success", successCount);
-        result.put("failure", failureCount);
-        result.put("total", channels.size());
-
-        log.info("批量同步渠道完成 - 总数: {}, 成功: {}, 失败: {}",
-                channels.size(), successCount, failureCount);
-
-        return result;
-    }
 
     /**
      * 获取所有渠道信息
@@ -249,6 +216,7 @@ public class NewApiService {
     private Map<String, Object> buildChannelData(NewApiChannel channel) {
         Map<String, Object> data = new HashMap<>();
 
+        data.put("id", channel.getId());
         data.put("name", channel.getName());
         data.put("type", channel.getType());
         data.put("key", channel.getKey());

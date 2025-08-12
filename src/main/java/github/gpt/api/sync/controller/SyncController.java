@@ -27,40 +27,79 @@ public class SyncController {
 
     public void syncChannels(Context ctx) {
         long startTime = System.currentTimeMillis();
-        log.info("开始同步渠道配置...");
+        log.info("开始智能同步渠道配置...");
 
         Map<String, Object> result = new HashMap<>();
+        int createdCount = 0;
+        int updatedCount = 0;
+        int failedCount = 0;
 
         try {
-            // 1. 从GPT-Load获取分组数据
-            log.info("步骤 1/3: 从 gpt-load 获取分组...");
-            List<GptLoadGroup> groups = gptLoadService.getAllGroups();
-            if (groups == null || groups.isEmpty()) {
+            // 1. 从 gpt-load 获取源分组
+            log.info("步骤 1/4: 从 gpt-load 获取分组...");
+            List<GptLoadGroup> sourceGroups = gptLoadService.getAllGroups();
+            if (sourceGroups == null || sourceGroups.isEmpty()) {
                 throw new IllegalStateException("从 gpt-load 获取的分组列表为空或获取失败");
             }
-            log.info("成功从 gpt-load 获取到 {} 个分组", groups.size());
+            log.info("成功从 gpt-load 获取到 {} 个分组", sourceGroups.size());
 
-            // 2. 将 GptLoadGroup 映射为 NewApiChannel
-            log.info("步骤 2/3: 正在将 gpt-load 分组映射为 new-api 渠道...");
-            List<NewApiChannel> channelsToSync = channelMapperService.mapToNewApiChannels(groups);
-            log.info("成功映射 {} 个渠道", channelsToSync.size());
+            // 2. 从 new-api 获取现有渠道
+            log.info("步骤 2/4: 从 new-api 获取现有渠道...");
+            List<NewApiChannel> existingChannelsList = newApiService.getAllChannels();
+            Map<String, NewApiChannel> existingChannelsMap = new HashMap<>();
+            for (NewApiChannel channel : existingChannelsList) {
+                if (channel.getBaseUrl() != null && !channel.getBaseUrl().isEmpty()) {
+                    existingChannelsMap.put(channel.getBaseUrl(), channel);
+                }
+            }
+            log.info("成功从 new-api 获取到 {} 个渠道", existingChannelsList.size());
 
-            // 3. 将转换后的渠道同步到 New-API
-            log.info("步骤 3/3: 正在将渠道同步到 new-api...");
-            Map<String, Integer> syncResult = newApiService.syncChannels(channelsToSync);
-            log.info("成功与 new-api 同步: {}", syncResult);
+            // 3. 比较并同步
+            log.info("步骤 3/4: 比较并同步渠道 (创建/更新)...");
+            for (GptLoadGroup sourceGroup : sourceGroups) {
+                NewApiChannel channelToSync = channelMapperService.mapToNewApiChannel(sourceGroup);
+                if (channelToSync == null) {
+                    log.warn("映射失败，跳过分组: {}", sourceGroup.getName());
+                    failedCount++;
+                    continue;
+                }
 
+                NewApiChannel existingChannel = existingChannelsMap.get(channelToSync.getBaseUrl());
+
+                if (existingChannel != null) {
+                    // 更新现有渠道
+                    channelToSync.setId(existingChannel.getId()); // 必须设置ID才能更新
+                    log.info("找到匹配渠道，准备更新: {} (ID: {})", channelToSync.getName(), channelToSync.getId());
+                    if (newApiService.updateChannel(channelToSync)) {
+                        updatedCount++;
+                    } else {
+                        failedCount++;
+                        log.error("更新渠道失败: {}", channelToSync.getName());
+                    }
+                } else {
+                    // 创建新渠道
+                    log.info("未找到匹配渠道，准备创建: {}", channelToSync.getName());
+                    if (newApiService.createChannel(channelToSync)) {
+                        createdCount++;
+                    } else {
+                        failedCount++;
+                        log.error("创建渠道失败: {}", channelToSync.getName());
+                    }
+                }
+            }
+            log.info("渠道同步处理完成。创建: {}, 更新: {}, 失败: {}", createdCount, updatedCount, failedCount);
+
+            // 4. 准备并返回结果
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
+            log.info("步骤 4/4: 同步成功完成! 总耗时: {}ms", duration);
 
-            log.info("同步成功完成! 处理了 {} 个分组，耗时: {}ms", groups.size(), duration);
-
-            // 4. 返回成功结果
             result.put("success", true);
             result.put("message", "同步成功完成");
-            result.put("groups_fetched", groups.size());
-            result.put("channels_processed", channelsToSync.size());
-            result.put("new_api_sync_result", syncResult);
+            result.put("groups_fetched", sourceGroups.size());
+            result.put("channels_created", createdCount);
+            result.put("channels_updated", updatedCount);
+            result.put("channels_failed", failedCount);
             result.put("duration_ms", duration);
 
             ctx.json(result);
@@ -68,7 +107,7 @@ public class SyncController {
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
-            log.error("同步过程中发生错误, 耗时: {}ms", duration, e);
+            log.error("同步过程中发生严重错误, 耗时: {}ms", duration, e);
 
             result.put("success", false);
             result.put("error", "同步失败: " + e.getMessage());
