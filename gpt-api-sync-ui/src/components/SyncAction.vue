@@ -7,15 +7,16 @@
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <Button @click="showDialog = true" class="w-full">
-        <Zap class="w-4 h-4 mr-2" />
+      <Button @click="showDialog = true" class="w-full" :disabled="isLoading">
+        <LoaderCircle v-if="isLoading" class="w-4 h-4 mr-2 animate-spin" />
+        <Zap v-else class="w-4 h-4 mr-2" />
         触发同步
       </Button>
     </CardContent>
     <CardFooter v-if="message || error" class="flex flex-col items-start gap-2">
       <div v-if="message" class="w-full p-4 bg-green-100 border border-green-400 text-green-700 rounded">
         <h4 class="font-bold">同步成功</h4>
-        <pre class="whitespace-pre-wrap break-all">{{ message }}</pre>
+        <p>{{ message }}</p>
       </div>
       <div v-if="error" class="w-full p-4 bg-red-100 border border-red-400 text-red-700 rounded">
         <h4 class="font-bold">同步失败</h4>
@@ -42,7 +43,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Zap } from 'lucide-vue-next';
+import { Zap, LoaderCircle } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
 import CardContent from '@/components/ui/card/CardContent.vue';
@@ -65,17 +66,24 @@ import { syncChannels } from '@/lib/api';
 const showDialog = ref(false);
 const message = ref<string | null>(null);
 const error = ref<string | null>(null);
+const isLoading = ref(false);
 
 const handleSync = async () => {
+  isLoading.value = true;
   try {
     message.value = null;
     error.value = null;
     const responseData = await syncChannels();
-    message.value = JSON.stringify(responseData, null, 2);
+    if (responseData.success) {
+      message.value = `${responseData.message} (耗时: ${responseData.duration_ms}ms, 新增: ${responseData.channels_created}, 更新: ${responseData.channels_updated}, 失败: ${responseData.channels_failed}, 获取分组: ${responseData.groups_fetched})`;
+    } else {
+      message.value = `同步未完全成功: ${responseData.message}`;
+    }
   } catch (e: any) {
     error.value = e.message || '同步失败';
     console.error(e);
   } finally {
+    isLoading.value = false;
     showDialog.value = false;
   }
 };
