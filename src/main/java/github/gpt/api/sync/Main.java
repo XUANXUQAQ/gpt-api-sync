@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder;
 import github.gpt.api.sync.config.AppConfig;
 import github.gpt.api.sync.controller.ApiController;
 import github.gpt.api.sync.controller.SyncController;
-import github.gpt.api.sync.db.DatabaseService;
 import github.gpt.api.sync.service.GptLoadService;
 import github.gpt.api.sync.service.NewApiService;
 import io.javalin.Javalin;
@@ -18,7 +17,6 @@ import java.util.Map;
 @Slf4j
 public class Main {
 
-    private static DatabaseService databaseService;
     private static GptLoadService gptLoadService;
     private static NewApiService newApiService;
 
@@ -56,13 +54,6 @@ public class Main {
     private static void initializeServices() {
         log.info("正在初始化服务组件...");
 
-        // 初始化数据库服务
-        databaseService = new DatabaseService();
-        log.info("数据库服务初始化完成");
-
-        // 初始化数据库表结构
-        databaseService.initDatabase();
-
         // 初始化GPT-Load服务
         gptLoadService = new GptLoadService();
         log.info("GPT-Load服务初始化完成");
@@ -81,7 +72,7 @@ public class Main {
      * 设置Web服务器和路由
      */
     private static Javalin setupWebServer() {
-        SyncController syncController = new SyncController(gptLoadService, databaseService, newApiService);
+        SyncController syncController = new SyncController(gptLoadService, newApiService);
         ApiController apiController = new ApiController(gptLoadService, newApiService);
 
         return Javalin.create(config -> {
@@ -130,7 +121,6 @@ public class Main {
 
         // 服务连接状态
         Map<String, Object> connections = new HashMap<>();
-        connections.put("database", databaseService.testConnection());
         connections.put("gptLoad", gptLoadService.testConnection());
         connections.put("newApi", newApiService.testConnection());
         status.put("connections", connections);
@@ -152,11 +142,6 @@ public class Main {
         boolean isHealthy = true;
         Map<String, Object> health = new HashMap<>();
 
-        // 检查数据库连接
-        boolean dbHealthy = databaseService.testConnection();
-        health.put("database", dbHealthy ? "ok" : "error");
-        if (!dbHealthy) isHealthy = false;
-
         // 检查GPT-Load连接
         boolean gptLoadHealthy = gptLoadService.testConnection();
         health.put("gptLoad", gptLoadHealthy ? "ok" : "error");
@@ -173,13 +158,6 @@ public class Main {
      */
     private static void testServicesConnection() {
         log.info("正在测试服务连接...");
-
-        // 测试数据库连接
-        if (databaseService.testConnection()) {
-            log.info("✓ 数据库连接正常");
-        } else {
-            log.warn("✗ 数据库连接失败");
-        }
 
         // 测试GPT-Load连接
         if (gptLoadService.testConnection()) {

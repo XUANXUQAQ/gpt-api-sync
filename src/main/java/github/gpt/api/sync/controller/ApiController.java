@@ -1,6 +1,5 @@
 package github.gpt.api.sync.controller;
 
-import github.gpt.api.sync.db.DatabaseService;
 import github.gpt.api.sync.model.gptload.GptLoadGroup;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
 import github.gpt.api.sync.service.GptLoadService;

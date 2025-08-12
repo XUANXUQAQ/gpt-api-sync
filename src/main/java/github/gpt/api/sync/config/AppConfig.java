@@ -23,9 +23,6 @@ public class AppConfig {
     public static final String NEW_API_ACCESS_TOKEN;
     public static final String NEW_API_USER_ID;
 
-    // 数据库配置
-    public static final String DATABASE_PATH;
-
     // 服务器配置
     public static final int SERVER_PORT;
 
@@ -47,8 +44,6 @@ public class AppConfig {
         NEW_API_BASE_URL = getEnvOrDefault("NEW_API_BASE_URL", configData.getNewApi().getBaseUrl());
         NEW_API_ACCESS_TOKEN = getEnvOrDefault("NEW_API_ACCESS_TOKEN", configData.getNewApi().getAccessToken());
         NEW_API_USER_ID = getEnvOrDefault("NEW_API_USER_ID", configData.getNewApi().getUserId());
-
-        DATABASE_PATH = getEnvOrDefault("DATABASE_PATH", configData.getDatabase().getPath());
 
         SERVER_PORT = getIntEnv("SERVER_PORT", configData.getServer().getPort());
 
@@ -117,7 +112,6 @@ public class AppConfig {
     private static class ConfigData {
         private GptLoad gptLoad = new GptLoad();
         private NewApi newApi = new NewApi();
-        private Database database = new Database();
         private Server server = new Server();
         private Sync sync = new Sync();
         private Log log = new Log();
@@ -134,11 +128,6 @@ public class AppConfig {
         private String baseUrl = "http://localhost:3000";
         private String accessToken = "";
         private String userId = "1";
-    }
-
-    @Data
-    private static class Database {
-        private String path = "gpt-api.db";
     }
 
     @Data

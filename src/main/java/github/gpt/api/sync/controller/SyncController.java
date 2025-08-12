@@ -1,6 +1,5 @@
 package github.gpt.api.sync.controller;
 
-import github.gpt.api.sync.db.DatabaseService;
 import github.gpt.api.sync.mapper.ChannelMapper;
 import github.gpt.api.sync.model.gptload.GptLoadGroup;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
@@ -19,13 +18,11 @@ import java.util.stream.Collectors;
 public class SyncController {
 
     private final GptLoadService gptLoadService;
-    private final DatabaseService databaseService;
 
     private final NewApiService newApiService;
 
-    public SyncController(GptLoadService gptLoadService, DatabaseService databaseService, NewApiService newApiService) {
+    public SyncController(GptLoadService gptLoadService, NewApiService newApiService) {
         this.gptLoadService = gptLoadService;
-        this.databaseService = databaseService;
         this.newApiService = newApiService;
     }
 
@@ -65,9 +62,6 @@ public class SyncController {
                     .collect(Collectors.toList());
 
             log.info("成功转换 {} 个渠道配置", channels.size());
-
-            // 4. 保存到数据库
-            databaseService.saveChannels(channels);
 
             // 5. 推送到New-API
             Map<String, Integer> syncResult = newApiService.syncChannels(channels);
