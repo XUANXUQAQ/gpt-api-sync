@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import github.gpt.api.sync.config.AppConfig;
 import github.gpt.api.sync.controller.ApiController;
 import github.gpt.api.sync.controller.SyncController;
+import github.gpt.api.sync.service.ChannelMapperService;
 import github.gpt.api.sync.service.GptLoadService;
 import github.gpt.api.sync.service.NewApiService;
 import io.javalin.Javalin;
@@ -19,6 +20,7 @@ public class Main {
 
     private static GptLoadService gptLoadService;
     private static NewApiService newApiService;
+    private static ChannelMapperService channelMapperService;
 
     public static void main(String[] args) {
         log.info("GPT-API同步服务启动中...");
@@ -62,6 +64,10 @@ public class Main {
         newApiService = new NewApiService();
         log.info("New-API服务初始化完成");
 
+        // 初始化 ChannelMapperService
+        channelMapperService = new ChannelMapperService();
+        log.info("ChannelMapperService 初始化完成");
+
         // 测试服务连接
         testServicesConnection();
 
@@ -72,7 +78,7 @@ public class Main {
      * 设置Web服务器和路由
      */
     private static Javalin setupWebServer() {
-        SyncController syncController = new SyncController(gptLoadService, newApiService);
+        SyncController syncController = new SyncController(gptLoadService, newApiService, channelMapperService);
         ApiController apiController = new ApiController(gptLoadService, newApiService);
 
         return Javalin.create(config -> {
@@ -94,7 +100,7 @@ public class Main {
                     ));
                     ctx.json(response);
                 })
-                .get("/sync", syncController::syncChannels)
+                .post("/sync", syncController::syncChannels)
                 .get("/status", Main::handleStatusRequest)
                 .get("/health", Main::handleHealthCheck)
                 .get("/api/gpt-load", apiController::getGptLoadInfo)

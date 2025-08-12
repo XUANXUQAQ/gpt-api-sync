@@ -1,8 +1,8 @@
 package github.gpt.api.sync.controller;
 
-import github.gpt.api.sync.mapper.ChannelMapper;
 import github.gpt.api.sync.model.gptload.GptLoadGroup;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
+import github.gpt.api.sync.service.ChannelMapperService;
 import github.gpt.api.sync.service.GptLoadService;
 import github.gpt.api.sync.service.NewApiService;
 import io.javalin.http.Context;
@@ -11,19 +11,18 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class SyncController {
 
     private final GptLoadService gptLoadService;
-
     private final NewApiService newApiService;
+    private final ChannelMapperService channelMapperService;
 
-    public SyncController(GptLoadService gptLoadService, NewApiService newApiService) {
+    public SyncController(GptLoadService gptLoadService, NewApiService newApiService, ChannelMapperService channelMapperService) {
         this.gptLoadService = gptLoadService;
         this.newApiService = newApiService;
+        this.channelMapperService = channelMapperService;
     }
 
     public void syncChannels(Context ctx) {
@@ -33,64 +32,47 @@ public class SyncController {
         Map<String, Object> result = new HashMap<>();
 
         try {
-            // 1. 测试GPT-Load连接
-            if (!gptLoadService.testConnection()) {
-                log.error("无法连接到GPT-Load服务");
-                result.put("success", false);
-                result.put("error", "无法连接到GPT-Load服务，请检查配置和服务状态");
-                ctx.status(500).json(result);
-                return;
-            }
-
-            // 2. 从GPT-Load获取分组数据
+            // 1. 从GPT-Load获取分组数据
+            log.info("步骤 1/3: 从 gpt-load 获取分组...");
             List<GptLoadGroup> groups = gptLoadService.getAllGroups();
-
             if (groups == null || groups.isEmpty()) {
-                log.warn("从GPT-Load获取到的分组列表为空");
-                result.put("success", false);
-                result.put("error", "从GPT-Load获取到的分组列表为空");
-                ctx.status(404).json(result);
-                return;
+                throw new IllegalStateException("从 gpt-load 获取的分组列表为空或获取失败");
             }
+            log.info("成功从 gpt-load 获取到 {} 个分组", groups.size());
 
-            log.info("从GPT-Load获取到 {} 个分组", groups.size());
+            // 2. 将 GptLoadGroup 映射为 NewApiChannel
+            log.info("步骤 2/3: 正在将 gpt-load 分组映射为 new-api 渠道...");
+            List<NewApiChannel> channelsToSync = channelMapperService.mapToNewApiChannels(groups);
+            log.info("成功映射 {} 个渠道", channelsToSync.size());
 
-            // 3. 转换数据格式
-            List<NewApiChannel> channels = groups.stream()
-                    .filter(Objects::nonNull)
-                    .map(ChannelMapper::transformGroupToChannel)
-                    .collect(Collectors.toList());
-
-            log.info("成功转换 {} 个渠道配置", channels.size());
-
-            // 5. 推送到New-API
-            Map<String, Integer> syncResult = newApiService.syncChannels(channels);
+            // 3. 将转换后的渠道同步到 New-API
+            log.info("步骤 3/3: 正在将渠道同步到 new-api...");
+            Map<String, Integer> syncResult = newApiService.syncChannels(channelsToSync);
+            log.info("成功与 new-api 同步: {}", syncResult);
 
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
 
-            log.info("同步完成! 处理了 {} 个分组，耗时: {}ms",
-                    groups.size(), duration);
+            log.info("同步成功完成! 处理了 {} 个分组，耗时: {}ms", groups.size(), duration);
 
-            // 6. 返回成功结果
+            // 4. 返回成功结果
             result.put("success", true);
             result.put("message", "同步成功完成");
-            result.put("groupsCount", groups.size());
-            result.put("channelsProcessed", channels.size());
-            result.put("newApiSync", syncResult);
-            result.put("duration", duration + "ms");
+            result.put("groups_fetched", groups.size());
+            result.put("channels_processed", channelsToSync.size());
+            result.put("new_api_sync_result", syncResult);
+            result.put("duration_ms", duration);
 
             ctx.json(result);
 
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
-
             log.error("同步过程中发生错误, 耗时: {}ms", duration, e);
 
             result.put("success", false);
-            result.put("error", "同步过程中发生内部错误: " + e.getMessage());
-            result.put("duration", duration + "ms");
+            result.put("error", "同步失败: " + e.getMessage());
+            result.put("duration_ms", duration);
 
             ctx.status(500).json(result);
         }
