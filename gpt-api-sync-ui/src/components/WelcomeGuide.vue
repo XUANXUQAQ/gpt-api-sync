@@ -72,6 +72,7 @@ const handleSave = async () => {
         fullConfig.newApi = { ...fullConfig.newApi, ...config.value.newApi };
 
         await updateConfig(fullConfig);
+        localStorage.setItem('hasConfigured', 'true');
         emit('configured');
     } catch (e: any) {
         error.value = e.message || '保存失败，请检查网络连接或后端服务。';

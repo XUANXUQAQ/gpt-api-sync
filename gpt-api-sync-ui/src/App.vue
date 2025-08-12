@@ -36,6 +36,12 @@ const showSettings = ref(false);
 const isFirstTime = ref<boolean | null>(null);
 
 const checkFirstStartup = async () => {
+  const hasConfigured = localStorage.getItem('hasConfigured');
+  if (hasConfigured === 'true') {
+    isFirstTime.value = false;
+    return;
+  }
+
   try {
     const first = await isFirstStartup();
     isFirstTime.value = first === 'true';
