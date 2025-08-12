@@ -65,22 +65,26 @@ public class AppConfig {
         CONNECTION_TIMEOUT = getIntEnv("CONNECTION_TIMEOUT", configData.getSync().getConnectionTimeout());
         READ_TIMEOUT = getIntEnv("READ_TIMEOUT", configData.getSync().getReadTimeout());
 
-        STANDARD_MODELS = configData.getModelRedirect() != null ?
-                Collections.unmodifiableList(configData.getModelRedirect().getStandardModels()) :
-                List.of(
-                        "gpt-4o",
-                        "gpt-4o-mini",
-                        "gpt-4.1-nano",
-                        "gpt-4.1-mini",
-                        "gpt-4.1",
-                        "claude-4-opus",
-                        "claude-4-sonnet",
-                        "claude-4-haiku",
-                        "claude-3.7-sonnet",
-                        "gemini-2.5-flash-lite",
-                        "gemini-2.5-flash",
-                        "gemini-2.5-pro"
-                );
+        List<String> defaultStandardModels = List.of(
+                "gpt-4o",
+                "gpt-4o-mini",
+                "gpt-4.1-nano",
+                "gpt-4.1-mini",
+                "gpt-4.1",
+                "claude-4-opus",
+                "claude-4-sonnet",
+                "claude-4-haiku",
+                "claude-3.7-sonnet",
+                "gemini-2.5-flash-lite",
+                "gemini-2.5-flash",
+                "gemini-2.5-pro"
+        );
+        if (configData.getModelRedirect() == null || configData.getModelRedirect().getStandardModels().isEmpty()) {
+            ModelRedirect modelRedirect = new ModelRedirect();
+            modelRedirect.setStandardModels(defaultStandardModels);
+            configData.setModelRedirect(modelRedirect);
+        }
+        STANDARD_MODELS = configData.getModelRedirect().getStandardModels();
 
         LOG_LEVEL = getEnvOrDefault("LOG_LEVEL", configData.getLog().getLevel());
 
