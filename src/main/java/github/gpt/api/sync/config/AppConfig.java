@@ -111,14 +111,6 @@ public class AppConfig {
         return defaultValue;
     }
 
-    private static boolean getBooleanEnv(String name, boolean defaultValue) {
-        String value = System.getenv(name);
-        if (value != null && !value.trim().isEmpty()) {
-            return value.trim().equalsIgnoreCase("true");
-        }
-        return defaultValue;
-    }
-
     // --- Nested classes to map JSON structure ---
     @Data
     public static class ConfigData {

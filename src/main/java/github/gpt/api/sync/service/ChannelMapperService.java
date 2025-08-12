@@ -5,21 +5,8 @@ import github.gpt.api.sync.model.gptload.GptLoadGroup;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Slf4j
 public class ChannelMapperService {
-
-    public List<NewApiChannel> mapToNewApiChannels(List<GptLoadGroup> gptLoadGroups) {
-        if (gptLoadGroups == null) {
-            return new ArrayList<>();
-        }
-        return gptLoadGroups.stream()
-                .map(this::mapToNewApiChannel)
-                .collect(Collectors.toList());
-    }
 
     public NewApiChannel mapToNewApiChannel(GptLoadGroup gptLoadGroup) {
         if (gptLoadGroup == null) {
