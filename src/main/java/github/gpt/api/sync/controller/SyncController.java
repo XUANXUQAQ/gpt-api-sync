@@ -11,6 +11,7 @@ import io.javalin.http.Context;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -184,7 +185,7 @@ public class SyncController {
             } else {
                 log.info("渠道 {} 没有可用的模型列表，跳过模型更新", channel.getName());
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error("为渠道 {} 获取模型列表时发生IO异常", channel.getName(), e);
         }
     }
