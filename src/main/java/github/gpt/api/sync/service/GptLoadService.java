@@ -102,8 +102,8 @@ public class GptLoadService {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", "Bearer " + AppConfig.GPT_LOAD_AUTH_KEY);
-            connection.setConnectTimeout(github.gpt.api.sync.config.AppConfig.CONNECTION_TIMEOUT);
-            connection.setReadTimeout(github.gpt.api.sync.config.AppConfig.READ_TIMEOUT);
+            connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
+            connection.setReadTimeout(AppConfig.READ_TIMEOUT);
 
             int responseCode = connection.getResponseCode();
             boolean success = responseCode == 200;

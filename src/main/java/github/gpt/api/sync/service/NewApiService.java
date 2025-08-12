@@ -1,6 +1,7 @@
 package github.gpt.api.sync.service;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import github.gpt.api.sync.config.AppConfig;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
 import github.gpt.api.sync.model.newapi.NewApiChannelResponseWrapper;
@@ -194,7 +195,7 @@ public class NewApiService {
         }
 
         // 假设响应体是 {"data": ["model1", "model2"], ...}
-        Map<String, Object> apiResponse = gson.fromJson(response.toString(), new com.google.gson.reflect.TypeToken<Map<String, Object>>() {
+        Map<String, Object> apiResponse = gson.fromJson(response.toString(), new TypeToken<Map<String, Object>>() {
         }.getType());
 
         if (apiResponse == null || !apiResponse.containsKey("data") || !(apiResponse.get("data") instanceof List)) {
