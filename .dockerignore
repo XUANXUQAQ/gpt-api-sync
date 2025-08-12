@@ -1,0 +1,27 @@
+# 排除版本控制目录
+.git
+.github
+
+# 排除IDE和编辑器配置
+.idea
+.vscode
+*.iml
+
+# 排除构建输出目录
+target/
+!target/gpt-api-sync-1.0.0.jar
+
+# 排除源代码和文档
+src/
+docs/
+gpt-api-sync-ui/
+
+# 排除Maven包装器
+.mvn/
+mvnw
+mvnw.cmd
+
+# 排除项目和依赖管理文件
+pom.xml
+.gitignore
+README.md
