@@ -1,4 +1,4 @@
-const baseUrl = "http://localhost:7000";
+const baseUrl = import.meta.env.DEV ? "http://localhost:7000" : "";
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {

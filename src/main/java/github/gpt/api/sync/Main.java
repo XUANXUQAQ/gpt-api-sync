@@ -101,6 +101,7 @@ public class Main {
                     config.showJavalinBanner = false;
                     config.http.defaultContentType = "application/json; charset=utf-8";
                     config.jsonMapper(new JavalinGson(new GsonBuilder().serializeNulls().create(), true));
+                    config.staticFiles.add("/static");
                 })
                 .after(ctx -> {
                     ctx.header("Access-Control-Allow-Origin", "*")
@@ -110,23 +111,7 @@ public class Main {
                             .header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, token");
                 })
                 .exception(Exception.class, (e, ctx) -> log.error("捕获异常 {}, ", e.getMessage(), e))
-                .get("/", ctx -> {
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("service", "GPT-API同步服务");
-                    response.put("version", "1.0.0");
-                    response.put("status", "running");
-                    response.put("endpoints", Map.of(
-                            "sync", "/sync - 触发同步操作",
-                            "status", "/status - 查看服务状态",
-                            "health", "/health - 健康检查",
-                            "getGptLoadInfo", "/api/gpt-load - 获取gpt-load信息",
-                            "getNewApiInfo", "/api/new-api - 获取new-api信息",
-                            "getConfig", "/config - 获取当前配置（屏蔽敏感信息）",
-                            "reloadConfig", "POST /config/reload - 从文件重新加载配置",
-                            "updateConfig", "PUT /config - 更新配置文件并重新加载"
-                    ));
-                    ctx.json(response);
-                })
+                .get("/", ctx -> ctx.redirect("/index.html"))
                 .post("/sync", syncController::syncChannels)
                 .get("/status", Main::handleStatusRequest)
                 .get("/api/gpt-load", apiController::getGptLoadInfo)

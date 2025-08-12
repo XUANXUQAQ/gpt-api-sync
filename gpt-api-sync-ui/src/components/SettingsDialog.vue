@@ -120,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
