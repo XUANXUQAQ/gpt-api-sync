@@ -29,7 +29,6 @@ public class AppConfig {
     // 同步配置
     public static final int CONNECTION_TIMEOUT;
     public static final int READ_TIMEOUT;
-    public static final boolean ENABLE_MOCK_MODE;
 
     static {
         configData = loadConfig();
@@ -46,7 +45,6 @@ public class AppConfig {
 
         CONNECTION_TIMEOUT = getIntEnv("CONNECTION_TIMEOUT", configData.getSync().getConnectionTimeout());
         READ_TIMEOUT = getIntEnv("READ_TIMEOUT", configData.getSync().getReadTimeout());
-        ENABLE_MOCK_MODE = getBooleanEnv("ENABLE_MOCK_MODE", configData.getSync().isEnableMockMode());
 
         logConfiguration();
     }
@@ -71,7 +69,6 @@ public class AppConfig {
         log.info("SERVER_PORT: {}", SERVER_PORT);
         log.info("CONNECTION_TIMEOUT: {}ms", CONNECTION_TIMEOUT);
         log.info("READ_TIMEOUT: {}ms", READ_TIMEOUT);
-        log.info("ENABLE_MOCK_MODE: {}", ENABLE_MOCK_MODE);
         log.info("==================================================");
     }
 
@@ -132,7 +129,6 @@ public class AppConfig {
     private static class Sync {
         private int connectionTimeout = 10000;
         private int readTimeout = 30000;
-        private boolean enableMockMode = false;
     }
 
     @Data
