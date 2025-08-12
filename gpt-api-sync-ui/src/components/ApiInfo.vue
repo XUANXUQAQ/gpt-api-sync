@@ -47,9 +47,11 @@ onMounted(fetchApiData);
   padding: 1rem;
   margin-bottom: 1rem;
 }
+
 .api-section {
   margin-bottom: 1rem;
 }
+
 pre {
   background-color: #f5f5f5;
   padding: 1rem;

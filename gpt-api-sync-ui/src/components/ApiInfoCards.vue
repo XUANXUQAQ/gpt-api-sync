@@ -22,7 +22,8 @@
             <TableBody>
               <TableRow v-for="group in gptLoadInfo" :key="group.name">
                 <TableCell>{{ group.name }}</TableCell>
-                <TableCell>{{ (Array.isArray(group.models) && group.models.length > 0) ? group.models.join(', ') : group.test_model || 'N/A' }}</TableCell>
+                <TableCell>{{ (Array.isArray(group.models) && group.models.length > 0) ? group.models.join(', ') :
+                  group.test_model || 'N/A' }}</TableCell>
                 <TableCell>{{ group.channel_type }}</TableCell>
               </TableRow>
             </TableBody>

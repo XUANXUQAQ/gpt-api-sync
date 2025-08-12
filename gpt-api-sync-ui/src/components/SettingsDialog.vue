@@ -44,11 +44,11 @@
                 </SelectContent>
               </Select>
             </div>
-             <div class="space-y-2">
+            <div class="space-y-2">
               <Label for="sync-conn-timeout">连接超时 (ms)</Label>
               <Input id="sync-conn-timeout" type="number" v-model.number="localConfig.sync.connectionTimeout" />
             </div>
-             <div class="space-y-2">
+            <div class="space-y-2">
               <Label for="sync-read-timeout">读取超时 (ms)</Label>
               <Input id="sync-read-timeout" type="number" v-model.number="localConfig.sync.readTimeout" />
             </div>
@@ -83,7 +83,8 @@
           <TabsContent value="models" class="space-y-4 p-2">
             <Label>标准模型列表</Label>
             <div class="flex flex-wrap gap-2 p-2 border rounded-md">
-              <Badge v-for="(model, index) in localConfig.modelRedirect.standardModels" :key="index" variant="secondary">
+              <Badge v-for="(model, index) in localConfig.modelRedirect.standardModels" :key="index"
+                variant="secondary">
                 {{ model }}
                 <button @click="removeModel(index)" class="ml-2 text-destructive hover:text-red-400">&times;</button>
               </Badge>
@@ -112,7 +113,7 @@
           </div>
         </div>
       </DialogFooter>
-       <div v-if="actionMessage" class="text-sm text-green-600 mt-2 text-center">{{ actionMessage }}</div>
+      <div v-if="actionMessage" class="text-sm text-green-600 mt-2 text-center">{{ actionMessage }}</div>
       <div v-if="actionError" class="text-sm text-red-600 mt-2 text-center">{{ actionError }}</div>
     </DialogContent>
   </Dialog>
@@ -221,7 +222,7 @@ const handleReload = async () => {
   } finally {
     isActionLoading.value = false;
     actionType.value = null;
-     setTimeout(() => {
+    setTimeout(() => {
       actionMessage.value = null;
       actionError.value = null;
     }, 3000);

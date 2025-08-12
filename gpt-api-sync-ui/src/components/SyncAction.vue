@@ -1,7 +1,7 @@
 <template>
   <Card class="w-full">
     <CardHeader>
-      <CardTitle>手动同步</CardTitle>
+      <CardTitle>进行同步</CardTitle>
       <CardDescription>
         触发一次从 gpt-load 到 new-api 的数据同步。
       </CardDescription>
@@ -13,14 +13,15 @@
       </Button>
     </CardContent>
     <CardFooter v-if="message || error" class="flex flex-col items-start gap-2">
-       <div v-if="message" class="w-full p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+      <div v-if="message" class="w-full p-4 bg-green-100 border border-green-400 text-green-700 rounded">
         <h4 class="font-bold">同步成功</h4>
         <pre class="whitespace-pre-wrap break-all">{{ message }}</pre>
       </div>
       <div v-if="error" class="w-full p-4 bg-red-100 border border-red-400 text-red-700 rounded">
         <h4 class="font-bold">同步失败</h4>
         <p>{{ error }}</p>
-      </div>    </CardFooter>
+      </div>
+    </CardFooter>
 
     <AlertDialog :open="showDialog" @update:open="showDialog = $event">
       <AlertDialogContent>
@@ -34,7 +35,8 @@
           <AlertDialogCancel>取消</AlertDialogCancel>
           <AlertDialogAction @click="handleSync">确认</AlertDialogAction>
         </AlertDialogFooter>
-      </AlertDialogContent>    </AlertDialog>
+      </AlertDialogContent>
+    </AlertDialog>
   </Card>
 </template>
 

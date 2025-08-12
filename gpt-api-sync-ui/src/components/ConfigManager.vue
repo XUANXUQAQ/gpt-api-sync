@@ -70,12 +70,15 @@ const updateConfig = async () => {
   padding: 1rem;
   margin-bottom: 1rem;
 }
+
 .config-actions {
   margin-bottom: 1rem;
 }
+
 .config-actions button {
   margin-right: 1rem;
 }
+
 .config-display textarea {
   width: 100%;
   box-sizing: border-box;
