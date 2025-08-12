@@ -6,13 +6,101 @@
 
     <groupId>github.gpt.api.sync</groupId>
     <artifactId>gpt-api-sync</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lombok.version>1.18.30</lombok.version>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.0</version> <!-- 使用最新版本 -->
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!-- 指定依赖项的复制目录 -->
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <!-- 复制所有的运行时依赖 -->
+                            <includeScope>runtime</includeScope>
+                            <!-- 可选：排除某些依赖项 -->
+                            <excludeArtifactIds>okio-jvm</excludeArtifactIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <!-- 处理 ServiceLoader 文件合并 -->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <!-- 处理 META-INF/services 下的其他文件 -->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/*</resource>
+                                </transformer>
+                                <!-- 处理 manifest 文件 -->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>github.gpt.api.sync.Main</mainClass>
+                                    <manifestEntries>
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
@@ -28,7 +116,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
