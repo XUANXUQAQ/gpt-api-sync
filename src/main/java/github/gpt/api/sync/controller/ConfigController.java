@@ -53,8 +53,20 @@ public class ConfigController {
      */
     public void handleUpdateConfig(Context ctx) {
         try {
+            // 获取当前配置以保留敏感字段
+            AppConfig.ConfigData currentConfig = AppConfig.getConfigData();
+
+            // 从请求体解析新配置
             String newConfigJson = ctx.body();
             AppConfig.ConfigData newConfigData = gson.fromJson(newConfigJson, AppConfig.ConfigData.class);
+
+            // 检查并保留未更改的敏感字段
+            if (newConfigData.getGptLoad() != null && "******".equals(newConfigData.getGptLoad().getAuthKey())) {
+                newConfigData.getGptLoad().setAuthKey(currentConfig.getGptLoad().getAuthKey());
+            }
+            if (newConfigData.getNewApi() != null && "******".equals(newConfigData.getNewApi().getAccessToken())) {
+                newConfigData.getNewApi().setAccessToken(currentConfig.getNewApi().getAccessToken());
+            }
 
             // 将更新后的配置写回文件
             try (FileWriter writer = new FileWriter("config.json")) {
