@@ -3,6 +3,7 @@ package github.gpt.api.sync.service;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,11 +51,31 @@ public class ModelRedirectService {
      * 在目标列表中为源字符串寻找最佳匹配（使用Levenshtein距离）。
      */
     private String findBestMatch(String source, List<String> targets) {
+        // 过滤掉可能导致“降级”的匹配项
+        // 例如，防止 "gpt-4o" 映射到 "gpt-4o-mini"
+        List<String> eligibleTargets = new ArrayList<>();
+        for (String target : targets) {
+            boolean isPotentialDowngrade = target.startsWith(source) &&
+                                           target.length() > source.length() &&
+                                           (target.endsWith("-mini") || target.endsWith("-nano") || target.endsWith("-lite"));
+
+            if (!isPotentialDowngrade) {
+                eligibleTargets.add(target);
+            } else {
+                log.debug("排除了潜在的降级匹配: source='{}', target='{}'", source, target);
+            }
+        }
+
+        if (eligibleTargets.isEmpty()) {
+            log.warn("为 '{}' 没有找到合适的（非降级）候选模型", source);
+            return null;
+        }
+
         // 阶段1: 包含(Substring)优先匹配
         String bestContainMatch = null;
         int shortestLength = Integer.MAX_VALUE;
 
-        for (String target : targets) {
+        for (String target : eligibleTargets) {
             if (target.contains(source)) {
                 if (target.length() < shortestLength) {
                     shortestLength = target.length();
@@ -73,7 +94,7 @@ public class ModelRedirectService {
         String bestLevenshteinMatch = null;
         int minDistance = Integer.MAX_VALUE;
 
-        for (String target : targets) {
+        for (String target : eligibleTargets) {
             int distance = calculateLevenshteinDistance(source, target);
             if (distance < minDistance) {
                 minDistance = distance;
