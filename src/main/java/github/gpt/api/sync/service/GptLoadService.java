@@ -2,6 +2,7 @@ package github.gpt.api.sync.service;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import github.gpt.api.sync.config.AppConfig;
 import github.gpt.api.sync.model.gptload.GptLoadApiResponse;
 import github.gpt.api.sync.model.gptload.GptLoadGroup;
 import lombok.extern.slf4j.Slf4j;
@@ -44,8 +45,8 @@ public class GptLoadService {
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", "Bearer " + authKey);
             connection.setRequestProperty("Content-Type", "application/json");
-            connection.setConnectTimeout(github.gpt.api.sync.config.AppConfig.CONNECTION_TIMEOUT);
-            connection.setReadTimeout(github.gpt.api.sync.config.AppConfig.READ_TIMEOUT);
+            connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
+            connection.setReadTimeout(AppConfig.READ_TIMEOUT);
 
             int responseCode = connection.getResponseCode();
             log.info("GPT-Load API响应码: {}", responseCode);
@@ -77,8 +78,8 @@ public class GptLoadService {
                 throw new IOException("GPT-Load API返回空响应");
             }
 
-            if (!apiResponse.isSuccess()) {
-                String errorMsg = "GPT-Load API返回错误: " + (apiResponse.getMessage() != null ? apiResponse.getMessage() : "未知错误");
+            if (apiResponse.getCode() != 0 || !"success".equalsIgnoreCase(apiResponse.getMessage())) {
+                String errorMsg = "GPT-Load API返回错误: " + (apiResponse.getMessage() != null ? apiResponse.getMessage() : "未知错误 (code: " + apiResponse.getCode() + ")");
                 log.error(errorMsg);
                 throw new IOException(errorMsg);
             }
@@ -135,22 +136,31 @@ public class GptLoadService {
     private String getMockGptLoadData() {
         return """
                 {
-                  "success": true,
+                  "code": 0,
+                  "message": "Success",
                   "data": [
                     {
                       "id": 1,
                       "name": "openai-group",
+                      "endpoint": "http://localhost:3001/proxy/openai-group",
                       "display_name": "OpenAI通用分组",
                       "description": "用于处理所有 OpenAI 模型的请求",
-                      "channel_type": "openai",
-                      "endpoint": "http://localhost:3001/proxy/openai-group",
-                      "test_model": "gpt-4o-mini,gpt-4-turbo",
                       "upstreams": [
                         {
                           "url": "https://api.openai.com",
                           "weight": 1
                         }
                       ],
+                      "channel_type": "openai",
+                      "sort": 1,
+                      "test_model": "gpt-4o-mini,gpt-4-turbo",
+                      "validation_endpoint": "",
+                      "param_overrides": {},
+                      "config": {},
+                      "proxy_keys": "",
+                      "last_validated_at": "2025-08-12T05:52:00.447891384Z",
+                      "created_at": "2025-08-11T12:59:24.248414181Z",
+                      "updated_at": "2025-08-12T05:52:00.447969189Z",
                       "api_keys": [
                         { "id": 101, "key_value": "sk-openai-key-1" },
                         { "id": 102, "key_value": "sk-openai-key-2" }
@@ -159,16 +169,25 @@ public class GptLoadService {
                     {
                       "id": 2,
                       "name": "anthropic-claude",
+                      "endpoint": "http://localhost:3001/proxy/anthropic-claude",
                       "display_name": "Anthropic Claude 分组",
                       "description": "处理 Claude Sonnet 和 Opus 模型",
-                      "channel_type": "anthropic",
-                      "test_model": "claude-3-sonnet-20240229",
                       "upstreams": [
                         {
                           "url": "https://api.anthropic.com",
                           "weight": 1
                         }
                       ],
+                      "channel_type": "anthropic",
+                      "sort": 2,
+                      "test_model": "claude-3-sonnet-20240229",
+                      "validation_endpoint": "",
+                      "param_overrides": {},
+                      "config": {},
+                      "proxy_keys": "",
+                      "last_validated_at": "2025-08-12T05:52:00.447891384Z",
+                      "created_at": "2025-08-11T12:59:24.248414181Z",
+                      "updated_at": "2025-08-12T05:52:00.447969189Z",
                       "api_keys": [
                         { "id": 201, "key_value": "sk-anthropic-key-1" }
                       ]
