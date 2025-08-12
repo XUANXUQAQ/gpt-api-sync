@@ -31,9 +31,6 @@ public class AppConfig {
     public static final int READ_TIMEOUT;
     public static final boolean ENABLE_MOCK_MODE;
 
-    // 日志配置
-    public static final String LOG_LEVEL;
-
     static {
         configData = loadConfig();
 
@@ -50,8 +47,6 @@ public class AppConfig {
         CONNECTION_TIMEOUT = getIntEnv("CONNECTION_TIMEOUT", configData.getSync().getConnectionTimeout());
         READ_TIMEOUT = getIntEnv("READ_TIMEOUT", configData.getSync().getReadTimeout());
         ENABLE_MOCK_MODE = getBooleanEnv("ENABLE_MOCK_MODE", configData.getSync().isEnableMockMode());
-
-        LOG_LEVEL = getEnvOrDefault("LOG_LEVEL", configData.getLog().getLevel());
 
         logConfiguration();
     }
@@ -73,12 +68,10 @@ public class AppConfig {
         log.info("NEW_API_BASE_URL: {}", NEW_API_BASE_URL);
         log.info("NEW_API_ACCESS_TOKEN: {}", NEW_API_ACCESS_TOKEN.isEmpty() ? "未设置" : "已设置");
         log.info("NEW_API_USER_ID: {}", NEW_API_USER_ID);
-        log.info("DATABASE_PATH: {}", DATABASE_PATH);
         log.info("SERVER_PORT: {}", SERVER_PORT);
         log.info("CONNECTION_TIMEOUT: {}ms", CONNECTION_TIMEOUT);
         log.info("READ_TIMEOUT: {}ms", READ_TIMEOUT);
         log.info("ENABLE_MOCK_MODE: {}", ENABLE_MOCK_MODE);
-        log.info("LOG_LEVEL: {}", LOG_LEVEL);
         log.info("==================================================");
     }
 
