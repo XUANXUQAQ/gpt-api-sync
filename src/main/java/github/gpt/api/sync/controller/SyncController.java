@@ -32,7 +32,7 @@ public class SyncController {
         this.modelRedirectService = modelRedirectService;
     }
 
-    public void syncChannels(Context ctx) {
+    public synchronized void syncChannels(Context ctx) {
         long startTime = System.currentTimeMillis();
         log.info("开始智能同步渠道配置...");
 
