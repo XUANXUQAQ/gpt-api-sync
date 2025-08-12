@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 public class AppConfig {
 
-    private static final String CONFIG_FILE = "config.json";
+    public static final String CONFIG_FILE = "config.json";
     @Getter
     private static ConfigData configData;
 
