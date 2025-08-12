@@ -12,7 +12,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +37,7 @@ public class NewApiService {
     public boolean testConnection() {
         try {
             String url = AppConfig.NEW_API_BASE_URL + "/api/status";
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
             connection.setReadTimeout(AppConfig.READ_TIMEOUT);
@@ -76,7 +77,7 @@ public class NewApiService {
 
             log.debug("正在创建渠道: {} - {}", channel.getName(), jsonBody);
 
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             if (AppConfig.NEW_API_ACCESS_TOKEN != null && !AppConfig.NEW_API_ACCESS_TOKEN.isEmpty()) {
@@ -102,7 +103,7 @@ public class NewApiService {
                 return false;
             }
 
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error("创建渠道时发生IO异常 - 渠道: {}, 错误: {}", channel.getName(), e.getMessage());
             return false;
         }
@@ -128,7 +129,7 @@ public class NewApiService {
 
             log.debug("正在更新渠道: {} - {}", channel.getName(), jsonBody);
 
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestMethod("PUT");
             connection.setRequestProperty("Content-Type", "application/json");
             if (AppConfig.NEW_API_ACCESS_TOKEN != null && !AppConfig.NEW_API_ACCESS_TOKEN.isEmpty()) {
@@ -154,7 +155,7 @@ public class NewApiService {
                 return false;
             }
 
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error("更新渠道时发生IO异常 - 渠道: {}, 错误: {}", channel.getName(), e.getMessage());
             return false;
         }
@@ -168,11 +169,11 @@ public class NewApiService {
      * @return 模型名称列表
      * @throws IOException 当API调用失败时抛出异常
      */
-    public List<String> fetchModelsForChannel(int channelId) throws IOException {
+    public List<String> fetchModelsForChannel(int channelId) throws IOException, URISyntaxException {
         String url = AppConfig.NEW_API_BASE_URL + "/api/channel/fetch_models/" + channelId;
         log.info("正在为渠道ID {} 获取模型列表: {}", channelId, url);
 
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + AppConfig.NEW_API_ACCESS_TOKEN);
         connection.setRequestProperty("New-Api-User", AppConfig.NEW_API_USER_ID);
@@ -214,11 +215,11 @@ public class NewApiService {
      * @return 渠道列表
      * @throws IOException 当API调用失败时抛出异常
      */
-    public List<NewApiChannel> getAllChannels() throws IOException {
+    public List<NewApiChannel> getAllChannels() throws IOException, URISyntaxException {
         String url = AppConfig.NEW_API_BASE_URL + "/api/channel/?page=1&page_size=100000";
         log.info("正在从 New-API 获取渠道信息: {}", url);
 
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + AppConfig.NEW_API_ACCESS_TOKEN);
         connection.setRequestProperty("New-Api-User", AppConfig.NEW_API_USER_ID);

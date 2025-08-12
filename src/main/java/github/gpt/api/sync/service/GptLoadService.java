@@ -11,7 +11,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class GptLoadService {
 
         HttpURLConnection connection = null;
         try {
-            connection = (HttpURLConnection) new URL(url).openConnection();
+            connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", "Bearer " + AppConfig.GPT_LOAD_AUTH_KEY);
             connection.setRequestProperty("Content-Type", "application/json");
@@ -84,6 +85,8 @@ public class GptLoadService {
             log.info("成功获取到 {} 个分组", groups != null ? groups.size() : 0);
             return groups;
 
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -99,7 +102,7 @@ public class GptLoadService {
     public boolean testConnection() {
         try {
             String url = AppConfig.GPT_LOAD_BASE_URL + "/api/groups";
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", "Bearer " + AppConfig.GPT_LOAD_AUTH_KEY);
             connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
