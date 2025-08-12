@@ -1,32 +1,23 @@
 <template>
-  <div id="app">
-    <header>
-      <h1>GPT-API 同步服务</h1>
+  <div class="container mx-auto p-4 md:p-8">
+    <header class="mb-8 text-center">
+      <h1 class="text-4xl font-bold tracking-tight">GPT-API 同步服务</h1>
+      <p class="text-muted-foreground mt-2">一个用于同步 gpt-load 和 new-api 配置的仪表板</p>
     </header>
-    <main>
-      <ServiceInfo />
-      <ApiInfo />
-      <ConfigManager />
-      <Actions />
+    <main class="space-y-8">
+      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <HealthCard class="lg:col-span-1" />
+        <div class="lg:col-span-2 flex items-center justify-center">
+           <SyncAction />
+        </div>
+      </div>
+      <ApiInfoCards />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import ServiceInfo from './components/ServiceInfo.vue';
-import ApiInfo from './components/ApiInfo.vue';
-import ConfigManager from './components/ConfigManager.vue';
-import Actions from './components/Actions.vue';
+import HealthCard from '@/components/HealthCard.vue';
+import SyncAction from '@/components/SyncAction.vue';
+import ApiInfoCards from '@/components/ApiInfoCards.vue';
 </script>
-
-<style scoped>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;}header {  margin-bottom: 2rem;}main {  max-width: 800px;  margin: 0 auto;  display: grid;
-  gap: 1rem;
-}
-</style>

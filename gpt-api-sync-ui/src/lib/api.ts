@@ -24,3 +24,4 @@ export const updateConfig = (config: any) =>
   }).then(handleResponse);
 
 export const syncChannels = () => fetch(`${baseUrl}/sync`, { method: 'POST' }).then(handleResponse);
+export const getHealth = () => fetch(`${baseUrl}/health`).then(handleResponse);
