@@ -50,25 +50,45 @@ public class ModelRedirectService {
      * 在目标列表中为源字符串寻找最佳匹配（使用Levenshtein距离）。
      */
     private String findBestMatch(String source, List<String> targets) {
-        String bestMatch = null;
+        // 阶段1: 包含(Substring)优先匹配
+        String bestContainMatch = null;
+        int shortestLength = Integer.MAX_VALUE;
+
+        for (String target : targets) {
+            if (target.contains(source)) {
+                if (target.length() < shortestLength) {
+                    shortestLength = target.length();
+                    bestContainMatch = target;
+                }
+            }
+        }
+
+        // 如果找到了包含匹配，直接返回最短的那个
+        if (bestContainMatch != null) {
+            log.trace("为 '{}' 找到包含优先匹配: '{}'", source, bestContainMatch);
+            return bestContainMatch;
+        }
+
+        // 阶段2: Levenshtein距离作为后备
+        String bestLevenshteinMatch = null;
         int minDistance = Integer.MAX_VALUE;
 
         for (String target : targets) {
             int distance = calculateLevenshteinDistance(source, target);
             if (distance < minDistance) {
                 minDistance = distance;
-                bestMatch = target;
+                bestLevenshteinMatch = target;
             }
         }
 
         // 设定一个阈值，避免完全不相关的匹配。
         // 如果最小距离大于源字符串长度的一半，我们认为这个匹配是不可靠的。
-        if (bestMatch != null && minDistance > source.length() / 2) {
-            log.trace("找到的最佳匹配 '{}' (距离: {}) 对于 '{}' 来说太远，已忽略。", bestMatch, minDistance, source);
+        if (bestLevenshteinMatch != null && minDistance > source.length() / 2) {
+            log.trace("找到的最佳Levenshtein匹配 '{}' (距离: {}) 对于 '{}' 来说太远，已忽略。", bestLevenshteinMatch, minDistance, source);
             return null;
         }
 
-        return bestMatch;
+        return bestLevenshteinMatch;
     }
 
     /**
