@@ -2,6 +2,7 @@ package github.gpt.api.sync;
 
 import com.google.gson.GsonBuilder;
 import github.gpt.api.sync.config.AppConfig;
+import github.gpt.api.sync.controller.ApiController;
 import github.gpt.api.sync.controller.SyncController;
 import github.gpt.api.sync.db.DatabaseService;
 import github.gpt.api.sync.service.GptLoadService;
@@ -81,6 +82,7 @@ public class Main {
      */
     private static Javalin setupWebServer() {
         SyncController syncController = new SyncController(gptLoadService, databaseService, newApiService);
+        ApiController apiController = new ApiController(gptLoadService, databaseService);
 
         return Javalin.create(config -> {
                     config.showJavalinBanner = false;
@@ -95,13 +97,17 @@ public class Main {
                     response.put("endpoints", Map.of(
                             "sync", "/sync - 触发同步操作",
                             "status", "/status - 查看服务状态",
-                            "health", "/health - 健康检查"
+                            "health", "/health - 健康检查",
+                            "getGptLoadInfo", "/api/gpt-load - 获取gpt-load信息",
+                            "getNewApiInfo", "/api/new-api - 获取new-api信息"
                     ));
                     ctx.json(response);
                 })
                 .get("/sync", syncController::syncChannels)
                 .get("/status", Main::handleStatusRequest)
                 .get("/health", Main::handleHealthCheck)
+                .get("/api/gpt-load", apiController::getGptLoadInfo)
+                .get("/api/new-api", apiController::getNewApiInfo)
                 .exception(Exception.class, (e, ctx) -> {
                     log.error("请求处理出现异常: {}", e.getMessage(), e);
                     ctx.status(500).json(Map.of(
