@@ -94,6 +94,7 @@ public class Main {
                     config.http.defaultContentType = "application/json; charset=utf-8";
                     config.jsonMapper(new JavalinGson(new GsonBuilder().serializeNulls().create(), true));
                 })
+                .exception(Exception.class, (e, ctx) -> log.error("捕获异常 {}, ", e.getMessage(), e))
                 .get("/", ctx -> {
                     Map<String, Object> response = new HashMap<>();
                     response.put("service", "GPT-API同步服务");
