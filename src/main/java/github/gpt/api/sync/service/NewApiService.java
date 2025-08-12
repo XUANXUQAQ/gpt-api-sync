@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import github.gpt.api.sync.config.AppConfig;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
+import github.gpt.api.sync.model.newapi.NewApiChannelResponseWrapper;
+import github.gpt.api.sync.model.newapi.NewApiGetAllChannelsResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -209,7 +211,7 @@ public class NewApiService {
 
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("GET");
-        connection.setRequestProperty("Authorization", accessToken);
+        connection.setRequestProperty("Authorization", "Bearer " + accessToken);
         connection.setRequestProperty("New-Api-User", newApiUserId);
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
@@ -230,18 +232,14 @@ public class NewApiService {
             }
         }
 
-        // New-API 的 /api/channel/ 端点返回的是一个 data 字段包含列表的结构
-        Map<String, Object> apiResponse = gson.fromJson(response.toString(), new TypeToken<Map<String, Object>>() {
-        }.getType());
+        // 将响应反序列化为 NewApiGetAllChannelsResponse 对象
+        NewApiChannelResponseWrapper apiResponse = gson.fromJson(response.toString(), NewApiChannelResponseWrapper.class);
 
-        if (apiResponse == null || !"true".equalsIgnoreCase(String.valueOf(apiResponse.get("success")))) {
-            throw new IOException("New-API 返回无效响应或错误消息");
+        if (apiResponse == null || apiResponse.getData() == null) {
+            throw new IOException("New-API 返回无效响应或空的 items 列表");
         }
 
-        // 从 data 字段中提取列表
-        String dataJson = gson.toJson(apiResponse.get("data"));
-        List<NewApiChannel> channels = gson.fromJson(dataJson, new com.google.gson.reflect.TypeToken<List<NewApiChannel>>() {
-        }.getType());
+        List<NewApiChannel> channels = apiResponse.getData().getItems();
 
         log.info("成功获取到 {} 个渠道", channels != null ? channels.size() : 0);
         return channels;
@@ -257,7 +255,7 @@ public class NewApiService {
         data.put("type", channel.getType());
         data.put("key", channel.getKey());
         data.put("status", channel.getStatus());
-        data.put("priority", channel.getPriority() != null ? channel.getPriority() : 1);
+        data.put("priority", channel.getPriority());
 
         if (channel.getBaseUrl() != null && !channel.getBaseUrl().isEmpty()) {
             data.put("base_url", channel.getBaseUrl());

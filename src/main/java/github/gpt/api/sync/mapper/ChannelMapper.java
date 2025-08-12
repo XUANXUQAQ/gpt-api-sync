@@ -27,7 +27,7 @@ public class ChannelMapper {
 
         channel.setStatus(1); // Enabled by default
         channel.setModels(group.getTestModel()); // Use test_model as the default models
-        channel.setPriority((long) group.getId());
+        channel.setPriority(group.getId());
 
         return channel;
     }
