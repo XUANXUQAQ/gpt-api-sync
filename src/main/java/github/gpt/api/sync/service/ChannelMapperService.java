@@ -31,7 +31,22 @@ public class ChannelMapperService {
         newApiChannel.setBaseUrl(gptLoadGroup.getEndpoint());
         newApiChannel.setModels(gptLoadGroup.getTestModel());
         newApiChannel.setGroupName(gptLoadGroup.getName()); // 使用 gpt-load 的 group name 作为 new-api 的 group
-        newApiChannel.setType(1); // 默认为 OpenAI 类型
+        // 根据 gpt-load 的 channel_type 映射 new-api 的 type
+        switch (gptLoadGroup.getChannelType()) {
+            case "openai":
+                newApiChannel.setType(1);
+                break;
+            case "gemini":
+                newApiChannel.setType(24);
+                break;
+            case "anthropic":
+                newApiChannel.setType(14);
+                break;
+            default:
+                log.warn("未知的 channel_type: '{}', 将默认为 OpenAI (1)", gptLoadGroup.getChannelType());
+                newApiChannel.setType(1); // 默认为 OpenAI 类型
+                break;
+        }
         newApiChannel.setStatus(1); // 默认启用
         newApiChannel.setPriority(0);
 
