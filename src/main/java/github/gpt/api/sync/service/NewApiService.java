@@ -1,11 +1,9 @@
 package github.gpt.api.sync.service;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import github.gpt.api.sync.config.AppConfig;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
 import github.gpt.api.sync.model.newapi.NewApiChannelResponseWrapper;
-import github.gpt.api.sync.model.newapi.NewApiGetAllChannelsResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -206,7 +204,7 @@ public class NewApiService {
      * @throws IOException 当API调用失败时抛出异常
      */
     public List<NewApiChannel> getAllChannels() throws IOException {
-        String url = newApiBaseUrl + "/api/channel/";
+        String url = newApiBaseUrl + "/api/channel/?page=1&page_size=100000";
         log.info("正在从 New-API 获取渠道信息: {}", url);
 
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
