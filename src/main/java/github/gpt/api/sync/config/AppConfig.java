@@ -18,7 +18,8 @@ import java.util.List;
 @Slf4j
 public class AppConfig {
 
-    public static final String CONFIG_FILE = "config.json";
+    private static final String DATA_PATH = "./data";
+    public static final String CONFIG_FILE = DATA_PATH + "/config.json";
     @Getter
     private static ConfigData configData;
 
@@ -50,6 +51,13 @@ public class AppConfig {
         reloadConfig();
         isFirstStart = Files.notExists(Path.of(CONFIG_FILE));
 
+        if (isFirstStart) {
+            try {
+                Files.createDirectories(Path.of(DATA_PATH));
+            } catch (IOException e) {
+                log.error("创建data文件夹失败", e);
+            }
+        }
         // 将更新后的配置写回文件
         var gson = new GsonBuilder().serializeNulls().create();
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {

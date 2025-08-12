@@ -8,8 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 
 @Slf4j
@@ -47,15 +45,6 @@ public class ConfigController {
         } catch (Exception e) {
             log.error("重新加载配置失败", e);
             ctx.status(500).json(Map.of("success", false, "error", "重新加载配置时发生错误: " + e.getMessage()));
-        }
-    }
-
-    public boolean isConfigFileExist() {
-        try {
-            return Files.exists(Path.of(AppConfig.CONFIG_FILE));
-        } catch (Exception e) {
-            log.error("检查配置文件是否存在失败", e);
-            return false;
         }
     }
 
