@@ -1,13 +1,17 @@
 package github.gpt.api.sync.config;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,8 +44,19 @@ public class AppConfig {
     // 日志配置
     public static String LOG_LEVEL;
 
+    public static final boolean isFirstStart;
+
     static {
         reloadConfig();
+        isFirstStart = Files.notExists(Path.of(CONFIG_FILE));
+
+        // 将更新后的配置写回文件
+        var gson = new GsonBuilder().serializeNulls().create();
+        try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
+            gson.toJson(configData, writer);
+        } catch (IOException e) {
+            log.error("写入配置文件失败", e);
+        }
     }
 
     /**

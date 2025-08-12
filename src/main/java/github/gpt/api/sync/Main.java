@@ -119,10 +119,7 @@ public class Main {
                 .get("/config", configController::handleGetConfig)
                 .post("/config/reload", configController::handleReloadConfig)
                 .put("/config", configController::handleUpdateConfig)
-                .get("/first", ctx -> {
-                    boolean configFileExist = configController.isConfigFileExist();
-                    ctx.result(String.valueOf(!configFileExist));
-                })
+                .get("/first", ctx -> ctx.result(String.valueOf(AppConfig.isFirstStart)))
                 .exception(Exception.class, (e, ctx) -> {
                     log.error("请求处理出现异常: {}", e.getMessage(), e);
                     ctx.status(500).json(Map.of(

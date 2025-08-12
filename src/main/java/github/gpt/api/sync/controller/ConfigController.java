@@ -92,7 +92,7 @@ public class ConfigController {
             }
 
             // 将更新后的配置写回文件
-            try (FileWriter writer = new FileWriter("config.json")) {
+            try (FileWriter writer = new FileWriter(AppConfig.CONFIG_FILE)) {
                 gson.toJson(newConfigData, writer);
             }
 
