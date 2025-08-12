@@ -94,7 +94,7 @@ public class Main {
                     config.http.defaultContentType = "application/json; charset=utf-8";
                     config.jsonMapper(new JavalinGson(new GsonBuilder().serializeNulls().create(), true));
                 })
-                .afterMatched(ctx -> {
+                .after(ctx -> {
                     ctx.header("Access-Control-Allow-Origin", "*")
                             .header("Access-Control-Allow-Credentials", "true")
                             .header("Access-Control-Allow-Methods", "*")
@@ -121,7 +121,6 @@ public class Main {
                 })
                 .post("/sync", syncController::syncChannels)
                 .get("/status", Main::handleStatusRequest)
-                .get("/health", Main::handleHealthCheck)
                 .get("/api/gpt-load", apiController::getGptLoadInfo)
                 .get("/api/new-api", apiController::getNewApiInfo)
                 .get("/config", configController::handleGetConfig)
@@ -160,24 +159,6 @@ public class Main {
         status.put("config", config);
 
         ctx.json(status);
-    }
-
-    /**
-     * 处理健康检查请求
-     */
-    private static void handleHealthCheck(Context ctx) {
-        boolean isHealthy = true;
-        Map<String, Object> health = new HashMap<>();
-
-        // 检查GPT-Load连接
-        boolean gptLoadHealthy = gptLoadService.testConnection();
-        health.put("gptLoad", gptLoadHealthy ? "ok" : "error");
-        if (!gptLoadHealthy) isHealthy = false;
-
-        health.put("status", isHealthy ? "healthy" : "unhealthy");
-        health.put("timestamp", System.currentTimeMillis());
-
-        ctx.status(isHealthy ? 200 : 503).json(health);
     }
 
     /**
