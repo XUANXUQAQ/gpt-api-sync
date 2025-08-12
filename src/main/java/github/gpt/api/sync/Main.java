@@ -121,7 +121,7 @@ public class Main {
                 .put("/config", configController::handleUpdateConfig)
                 .get("/first", ctx -> {
                     boolean configFileExist = configController.isConfigFileExist();
-                    ctx.result(String.valueOf(configFileExist));
+                    ctx.result(String.valueOf(!configFileExist));
                 })
                 .exception(Exception.class, (e, ctx) -> {
                     log.error("请求处理出现异常: {}", e.getMessage(), e);

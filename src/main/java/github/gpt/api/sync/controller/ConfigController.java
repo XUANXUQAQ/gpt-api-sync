@@ -72,11 +72,23 @@ public class ConfigController {
             AppConfig.ConfigData newConfigData = gson.fromJson(newConfigJson, AppConfig.ConfigData.class);
 
             // 检查并保留未更改的敏感字段
-            if (newConfigData.getGptLoad() != null && "******".equals(newConfigData.getGptLoad().getAuthKey())) {
-                newConfigData.getGptLoad().setAuthKey(currentConfig.getGptLoad().getAuthKey());
+            if (newConfigData.getGptLoad() != null) {
+                if ("******".equals(newConfigData.getGptLoad().getAuthKey())) {
+                    newConfigData.getGptLoad().setAuthKey(currentConfig.getGptLoad().getAuthKey());
+                }
+                String baseUrl = newConfigData.getGptLoad().getBaseUrl();
+                if (baseUrl != null && baseUrl.endsWith("/")) {
+                    newConfigData.getGptLoad().setBaseUrl(baseUrl.substring(0, baseUrl.length() - 1));
+                }
             }
-            if (newConfigData.getNewApi() != null && "******".equals(newConfigData.getNewApi().getAccessToken())) {
-                newConfigData.getNewApi().setAccessToken(currentConfig.getNewApi().getAccessToken());
+            if (newConfigData.getNewApi() != null) {
+                if ("******".equals(newConfigData.getNewApi().getAccessToken())) {
+                    newConfigData.getNewApi().setAccessToken(currentConfig.getNewApi().getAccessToken());
+                }
+                String baseUrl = newConfigData.getNewApi().getBaseUrl();
+                if (baseUrl != null && baseUrl.endsWith("/")) {
+                    newConfigData.getNewApi().setBaseUrl(baseUrl.substring(0, baseUrl.length() - 1));
+                }
             }
 
             // 将更新后的配置写回文件
