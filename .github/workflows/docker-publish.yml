@@ -1,6 +1,7 @@
 name: Docker Image CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "master" ]
     # 仅当对Dockerfile或Java代码进行更改时才触发
