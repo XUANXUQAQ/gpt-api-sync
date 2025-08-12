@@ -94,6 +94,13 @@ public class Main {
                     config.http.defaultContentType = "application/json; charset=utf-8";
                     config.jsonMapper(new JavalinGson(new GsonBuilder().serializeNulls().create(), true));
                 })
+                .afterMatched(ctx -> {
+                    ctx.header("Access-Control-Allow-Origin", "*")
+                            .header("Access-Control-Allow-Credentials", "true")
+                            .header("Access-Control-Allow-Methods", "*")
+                            .header("Access-Control-Max-Age", "7200")
+                            .header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, token");
+                })
                 .exception(Exception.class, (e, ctx) -> log.error("捕获异常 {}, ", e.getMessage(), e))
                 .get("/", ctx -> {
                     Map<String, Object> response = new HashMap<>();
