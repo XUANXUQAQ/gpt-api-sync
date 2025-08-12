@@ -67,7 +67,20 @@ public class AppConfig {
 
         STANDARD_MODELS = configData.getModelRedirect() != null ?
                 Collections.unmodifiableList(configData.getModelRedirect().getStandardModels()) :
-                Collections.emptyList();
+                List.of(
+                        "gpt-4o",
+                        "gpt-4o-mini",
+                        "gpt-4.1-nano",
+                        "gpt-4.1-mini",
+                        "gpt-4.1",
+                        "claude-4-opus",
+                        "claude-4-sonnet",
+                        "claude-4-haiku",
+                        "claude-3.7-sonnet",
+                        "gemini-2.5-flash-lite",
+                        "gemini-2.5-flash",
+                        "gemini-2.5-pro"
+                );
 
         LOG_LEVEL = getEnvOrDefault("LOG_LEVEL", configData.getLog().getLevel());
 
