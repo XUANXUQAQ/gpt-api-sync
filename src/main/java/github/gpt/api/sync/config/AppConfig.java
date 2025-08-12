@@ -21,6 +21,7 @@ public class AppConfig {
     // New-API配置
     public static final String NEW_API_BASE_URL;
     public static final String NEW_API_ACCESS_TOKEN;
+    public static final String NEW_API_USER_ID;
 
     // 数据库配置
     public static final String DATABASE_PATH;
@@ -45,6 +46,7 @@ public class AppConfig {
 
         NEW_API_BASE_URL = getEnvOrDefault("NEW_API_BASE_URL", configData.getNewApi().getBaseUrl());
         NEW_API_ACCESS_TOKEN = getEnvOrDefault("NEW_API_ACCESS_TOKEN", configData.getNewApi().getAccessToken());
+        NEW_API_USER_ID = getEnvOrDefault("NEW_API_USER_ID", configData.getNewApi().getUserId());
 
         DATABASE_PATH = getEnvOrDefault("DATABASE_PATH", configData.getDatabase().getPath());
 
@@ -75,6 +77,7 @@ public class AppConfig {
         log.info("GPT_LOAD_AUTH_KEY: {}", GPT_LOAD_AUTH_KEY.isEmpty() ? "未设置" : "已设置");
         log.info("NEW_API_BASE_URL: {}", NEW_API_BASE_URL);
         log.info("NEW_API_ACCESS_TOKEN: {}", NEW_API_ACCESS_TOKEN.isEmpty() ? "未设置" : "已设置");
+        log.info("NEW_API_USER_ID: {}", NEW_API_USER_ID);
         log.info("DATABASE_PATH: {}", DATABASE_PATH);
         log.info("SERVER_PORT: {}", SERVER_PORT);
         log.info("CONNECTION_TIMEOUT: {}ms", CONNECTION_TIMEOUT);
@@ -130,6 +133,7 @@ public class AppConfig {
     private static class NewApi {
         private String baseUrl = "http://localhost:3000";
         private String accessToken = "";
+        private String userId = "1";
     }
 
     @Data

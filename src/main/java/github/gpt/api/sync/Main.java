@@ -82,7 +82,7 @@ public class Main {
      */
     private static Javalin setupWebServer() {
         SyncController syncController = new SyncController(gptLoadService, databaseService, newApiService);
-        ApiController apiController = new ApiController(gptLoadService, databaseService);
+        ApiController apiController = new ApiController(gptLoadService, newApiService);
 
         return Javalin.create(config -> {
                     config.showJavalinBanner = false;
