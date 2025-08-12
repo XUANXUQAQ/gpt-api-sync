@@ -14,6 +14,9 @@ import io.javalin.http.Context;
 import io.javalin.json.JavalinGson;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +30,9 @@ public class Main {
 
     public static void main(String[] args) {
         log.info("GPT-API同步服务启动中...");
+
+        // 设置日志级别
+        setLogLevel(AppConfig.LOG_LEVEL);
 
         try {
             // 初始化服务
@@ -180,5 +186,16 @@ public class Main {
         } else {
             log.warn("✗ New-API服务连接失败，请检查配置和服务状态");
         }
+    }
+
+    /**
+     * 设置应用程序的日志记录级别。
+     *
+     * @param levelString 日志级别字符串（例如 "INFO", "DEBUG"）
+     */
+    private static void setLogLevel(String levelString) {
+        Level level = Level.toLevel(levelString, Level.INFO); // 默认为 INFO
+        Configurator.setRootLevel(level);
+        log.info("日志级别已设置为: {}", level);
     }
 }

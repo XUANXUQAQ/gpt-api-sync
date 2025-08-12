@@ -37,6 +37,9 @@ public class AppConfig {
     // 模型重定向配置
     public static List<String> STANDARD_MODELS;
 
+    // 日志配置
+    public static String LOG_LEVEL;
+
     static {
         reloadConfig();
     }
@@ -66,6 +69,8 @@ public class AppConfig {
                 Collections.unmodifiableList(configData.getModelRedirect().getStandardModels()) :
                 Collections.emptyList();
 
+        LOG_LEVEL = getEnvOrDefault("LOG_LEVEL", configData.getLog().getLevel());
+
         logConfiguration();
         log.info("配置重新加载完成。");
     }
@@ -91,6 +96,7 @@ public class AppConfig {
         log.info("CONNECTION_TIMEOUT: {}ms", CONNECTION_TIMEOUT);
         log.info("READ_TIMEOUT: {}ms", READ_TIMEOUT);
         log.info("STANDARD_MODELS_COUNT: {}", STANDARD_MODELS.size());
+        log.info("LOG_LEVEL: {}", LOG_LEVEL);
         log.info("==================================================");
     }
 
