@@ -19,14 +19,10 @@ import java.util.List;
 public class GptLoadService {
 
     private final Gson gson;
-    private final String gptLoadBaseUrl;
-    private final String authKey;
 
     public GptLoadService() {
         this.gson = new Gson();
-        this.gptLoadBaseUrl = AppConfig.GPT_LOAD_BASE_URL;
-        this.authKey = AppConfig.GPT_LOAD_AUTH_KEY;
-        log.info("GptLoadService初始化完成, 基础URL: {}", gptLoadBaseUrl);
+        log.info("GptLoadService初始化完成");
     }
 
     /**
@@ -36,14 +32,14 @@ public class GptLoadService {
      * @throws IOException 当API调用失败时抛出异常
      */
     public List<GptLoadGroup> getAllGroups() throws IOException {
-        String url = gptLoadBaseUrl + "/api/groups";
+        String url = AppConfig.GPT_LOAD_BASE_URL + "/api/groups";
         log.info("正在从GPT-Load获取分组信息: {}", url);
 
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization", "Bearer " + authKey);
+            connection.setRequestProperty("Authorization", "Bearer " + AppConfig.GPT_LOAD_AUTH_KEY);
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
             connection.setReadTimeout(AppConfig.READ_TIMEOUT);
@@ -102,10 +98,10 @@ public class GptLoadService {
      */
     public boolean testConnection() {
         try {
-            String url = gptLoadBaseUrl + "/api/groups";
+            String url = AppConfig.GPT_LOAD_BASE_URL + "/api/groups";
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization", "Bearer " + authKey);
+            connection.setRequestProperty("Authorization", "Bearer " + AppConfig.GPT_LOAD_AUTH_KEY);
             connection.setConnectTimeout(github.gpt.api.sync.config.AppConfig.CONNECTION_TIMEOUT);
             connection.setReadTimeout(github.gpt.api.sync.config.AppConfig.READ_TIMEOUT);
 

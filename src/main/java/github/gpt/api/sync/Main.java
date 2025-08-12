@@ -3,6 +3,7 @@ package github.gpt.api.sync;
 import com.google.gson.GsonBuilder;
 import github.gpt.api.sync.config.AppConfig;
 import github.gpt.api.sync.controller.ApiController;
+import github.gpt.api.sync.controller.ConfigController;
 import github.gpt.api.sync.controller.SyncController;
 import github.gpt.api.sync.service.ChannelMapperService;
 import github.gpt.api.sync.service.GptLoadService;
@@ -86,6 +87,7 @@ public class Main {
     private static Javalin setupWebServer() {
         SyncController syncController = new SyncController(gptLoadService, newApiService, channelMapperService, modelRedirectService);
         ApiController apiController = new ApiController(gptLoadService, newApiService);
+        ConfigController configController = new ConfigController();
 
         return Javalin.create(config -> {
                     config.showJavalinBanner = false;
@@ -102,7 +104,10 @@ public class Main {
                             "status", "/status - 查看服务状态",
                             "health", "/health - 健康检查",
                             "getGptLoadInfo", "/api/gpt-load - 获取gpt-load信息",
-                            "getNewApiInfo", "/api/new-api - 获取new-api信息"
+                            "getNewApiInfo", "/api/new-api - 获取new-api信息",
+                            "getConfig", "/config - 获取当前配置（屏蔽敏感信息）",
+                            "reloadConfig", "POST /config/reload - 从文件重新加载配置",
+                            "updateConfig", "PUT /config - 更新配置文件并重新加载"
                     ));
                     ctx.json(response);
                 })
@@ -111,6 +116,9 @@ public class Main {
                 .get("/health", Main::handleHealthCheck)
                 .get("/api/gpt-load", apiController::getGptLoadInfo)
                 .get("/api/new-api", apiController::getNewApiInfo)
+                .get("/config", configController::handleGetConfig)
+                .post("/config/reload", configController::handleReloadConfig)
+                .put("/config", configController::handleUpdateConfig)
                 .exception(Exception.class, (e, ctx) -> {
                     log.error("请求处理出现异常: {}", e.getMessage(), e);
                     ctx.status(500).json(Map.of(

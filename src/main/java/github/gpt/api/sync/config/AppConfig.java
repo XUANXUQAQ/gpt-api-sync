@@ -2,6 +2,7 @@ package github.gpt.api.sync.config;
 
 import com.google.gson.Gson;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileReader;
@@ -14,31 +15,41 @@ import java.util.List;
 public class AppConfig {
 
     private static final String CONFIG_FILE = "config.json";
-    private static final ConfigData configData;
+    @Getter
+    private static ConfigData configData;
 
     // GPT-Load配置
-    public static final String GPT_LOAD_BASE_URL;
-    public static final String GPT_LOAD_AUTH_KEY;
+    public static String GPT_LOAD_BASE_URL;
+    public static String GPT_LOAD_AUTH_KEY;
 
     // New-API配置
-    public static final String NEW_API_BASE_URL;
-    public static final String NEW_API_ACCESS_TOKEN;
-    public static final String NEW_API_USER_ID;
+    public static String NEW_API_BASE_URL;
+    public static String NEW_API_ACCESS_TOKEN;
+    public static String NEW_API_USER_ID;
 
     // 服务器配置
-    public static final int SERVER_PORT;
+    public static int SERVER_PORT;
 
     // 同步配置
-    public static final int CONNECTION_TIMEOUT;
-    public static final int READ_TIMEOUT;
+    public static int CONNECTION_TIMEOUT;
+    public static int READ_TIMEOUT;
 
     // 模型重定向配置
-    public static final List<String> STANDARD_MODELS;
+    public static List<String> STANDARD_MODELS;
 
     static {
+        reloadConfig();
+    }
+
+    /**
+     * 重新加载配置文件并更新所有配置字段。
+     * 这是一个同步方法，以防止并发重载问题。
+     */
+    public static synchronized void reloadConfig() {
+        log.info("正在重新加载配置...");
         configData = loadConfig();
 
-        // 从加载的配置初始化常量
+        // 从加载的配置初始化字段
         GPT_LOAD_BASE_URL = getEnvOrDefault("GPT_LOAD_BASE_URL", configData.getGptLoad().getBaseUrl());
         GPT_LOAD_AUTH_KEY = getEnvOrDefault("GPT_LOAD_AUTH_KEY", configData.getGptLoad().getAuthKey());
 
@@ -56,6 +67,7 @@ public class AppConfig {
                 Collections.emptyList();
 
         logConfiguration();
+        log.info("配置重新加载完成。");
     }
 
     private static ConfigData loadConfig() {
@@ -109,7 +121,7 @@ public class AppConfig {
 
     // --- Nested classes to map JSON structure ---
     @Data
-    private static class ConfigData {
+    public static class ConfigData {
         private GptLoad gptLoad = new GptLoad();
         private NewApi newApi = new NewApi();
         private Server server = new Server();
@@ -119,36 +131,36 @@ public class AppConfig {
     }
 
     @Data
-    private static class GptLoad {
+    public static class GptLoad {
         private String baseUrl = "http://localhost:3001";
         private String authKey = "";
     }
 
     @Data
-    private static class NewApi {
+    public static class NewApi {
         private String baseUrl = "http://localhost:3000";
         private String accessToken = "";
         private String userId = "1";
     }
 
     @Data
-    private static class Server {
+    public static class Server {
         private int port = 7000;
     }
 
     @Data
-    private static class Sync {
+    public static class Sync {
         private int connectionTimeout = 10000;
         private int readTimeout = 30000;
     }
 
     @Data
-    private static class Log {
+    public static class Log {
         private String level = "INFO";
     }
-}
 
-@Data
-class ModelRedirect {
-    private List<String> standardModels = Collections.emptyList();
+    @Data
+    public static class ModelRedirect {
+        private List<String> standardModels = Collections.emptyList();
+    }
 }
