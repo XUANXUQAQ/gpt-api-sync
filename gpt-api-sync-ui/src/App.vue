@@ -4,12 +4,10 @@
       <h1 class="text-4xl font-bold tracking-tight">GPT-API 同步服务</h1>
       <p class="text-muted-foreground mt-2">一个用于同步 gpt-load 和 new-api 配置的仪表板</p>
     </header>
-    <main class="space-y-8">
+    <main class="space-y-8 max-w-4xl mx-auto">
       <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         <HealthCard class="lg:col-span-1" />
-        <div class="lg:col-span-2 flex items-center justify-center">
-           <SyncAction />
-        </div>
+        <SyncAction class="lg:col-span-2" />
       </div>
       <ApiInfoCards />
     </main>
