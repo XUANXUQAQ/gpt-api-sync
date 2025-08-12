@@ -81,6 +81,15 @@
           </TabsContent>
 
           <TabsContent value="models" class="space-y-4 p-2">
+            <div class="space-y-2">
+              <Label>模型重定向说明</Label>
+              <p class="text-sm text-muted-foreground">
+                当从 GPT-Load 获取的模型标准模型名列表中不存在时，系统将采用模糊匹配算法，自动寻找并重定向到最相似的模型名称。您可以在下方手动管理标准模型列表。
+                <br />
+                例如：有的API返回可能模型名为gemini-pro-2.5，如果您在标准模型名中添加gemini-2.5-pro，则在进行同步时将会在New-API中自动添加一条 "gemini-2.5-pro":
+                "gemini-pro-2.5"的规则
+              </p>
+            </div>
             <Label>标准模型列表</Label>
             <div class="flex flex-wrap gap-2 p-2 border rounded-md">
               <Badge v-for="(model, index) in localConfig.modelRedirect.standardModels" :key="index"
