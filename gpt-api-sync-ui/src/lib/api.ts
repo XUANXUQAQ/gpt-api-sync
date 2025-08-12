@@ -8,7 +8,6 @@ const handleResponse = async (response: Response) => {
   return response.json();
 };
 
-export const getServiceInfo = () => fetch(`${baseUrl}/`).then(handleResponse);
 export const getServiceStatus = () =>
   fetch(`${baseUrl}/status`).then(handleResponse);
 export const getGptLoadInfo = () =>
