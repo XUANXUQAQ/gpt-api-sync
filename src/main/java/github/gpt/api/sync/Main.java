@@ -12,6 +12,7 @@ import github.gpt.api.sync.service.NewApiService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.json.JavalinGson;
+import io.javalin.plugin.bundled.CorsPluginConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.logging.log4j.Level;
@@ -96,6 +97,7 @@ public class Main {
         ConfigController configController = new ConfigController();
 
         return Javalin.create(config -> {
+                    config.bundledPlugins.enableCors(corsPluginConfig -> corsPluginConfig.addRule(CorsPluginConfig.CorsRule::anyHost));
                     config.showJavalinBanner = false;
                     config.http.defaultContentType = "application/json; charset=utf-8";
                     config.jsonMapper(new JavalinGson(new GsonBuilder().serializeNulls().create(), true));
