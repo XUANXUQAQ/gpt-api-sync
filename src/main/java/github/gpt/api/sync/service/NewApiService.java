@@ -27,9 +27,9 @@ public class NewApiService {
 
     public NewApiService() {
         this.gson = new Gson();
-        this.newApiBaseUrl = github.gpt.api.sync.config.AppConfig.NEW_API_BASE_URL;
-        this.accessToken = github.gpt.api.sync.config.AppConfig.NEW_API_ACCESS_TOKEN;
-        this.newApiUserId = github.gpt.api.sync.config.AppConfig.NEW_API_USER_ID;
+        this.newApiBaseUrl = AppConfig.NEW_API_BASE_URL;
+        this.accessToken = AppConfig.NEW_API_ACCESS_TOKEN;
+        this.newApiUserId = AppConfig.NEW_API_USER_ID;
         log.info("NewApiService初始化完成, 基础URL: {}", newApiBaseUrl);
     }
 
@@ -43,8 +43,8 @@ public class NewApiService {
             String url = newApiBaseUrl + "/api/status";
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(github.gpt.api.sync.config.AppConfig.CONNECTION_TIMEOUT);
-            connection.setReadTimeout(github.gpt.api.sync.config.AppConfig.READ_TIMEOUT);
+            connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
+            connection.setReadTimeout(AppConfig.READ_TIMEOUT);
 
             int responseCode = connection.getResponseCode();
             boolean success = responseCode == 200;
@@ -74,8 +74,10 @@ public class NewApiService {
         try {
             String url = newApiBaseUrl + "/api/channel/";
 
-            Map<String, Object> channelData = buildChannelData(channel);
-            String jsonBody = gson.toJson(channelData);
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("mode", "single");
+            requestBody.put("channel", buildChannelData(channel));
+            String jsonBody = gson.toJson(requestBody);
 
             log.debug("正在创建渠道: {} - {}", channel.getName(), jsonBody);
 
@@ -124,7 +126,7 @@ public class NewApiService {
         }
 
         try {
-            String url = newApiBaseUrl + "/api/channel/" + channel.getId();
+            String url = newApiBaseUrl + "/api/channel/";
 
             Map<String, Object> channelData = buildChannelData(channel);
             String jsonBody = gson.toJson(channelData);

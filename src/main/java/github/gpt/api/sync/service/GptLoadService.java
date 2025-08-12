@@ -24,8 +24,8 @@ public class GptLoadService {
 
     public GptLoadService() {
         this.gson = new Gson();
-        this.gptLoadBaseUrl = github.gpt.api.sync.config.AppConfig.GPT_LOAD_BASE_URL;
-        this.authKey = github.gpt.api.sync.config.AppConfig.GPT_LOAD_AUTH_KEY;
+        this.gptLoadBaseUrl = AppConfig.GPT_LOAD_BASE_URL;
+        this.authKey = AppConfig.GPT_LOAD_AUTH_KEY;
         log.info("GptLoadService初始化完成, 基础URL: {}", gptLoadBaseUrl);
     }
 
