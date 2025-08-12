@@ -1,5 +1,5 @@
 # 使用官方的 OpenJDK 21 JRE 镜像作为基础镜像
-FROM openjdk:21-jre
+FROM openjdk:21
 
 # 设置工作目录
 WORKDIR /app
