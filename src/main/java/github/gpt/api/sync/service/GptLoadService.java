@@ -157,14 +157,10 @@ public class GptLoadService {
                       "validation_endpoint": "",
                       "param_overrides": {},
                       "config": {},
-                      "proxy_keys": "",
+                      "proxy_keys": "proxy-key-for-openai-group,another-key",
                       "last_validated_at": "2025-08-12T05:52:00.447891384Z",
                       "created_at": "2025-08-11T12:59:24.248414181Z",
-                      "updated_at": "2025-08-12T05:52:00.447969189Z",
-                      "api_keys": [
-                        { "id": 101, "key_value": "sk-openai-key-1" },
-                        { "id": 102, "key_value": "sk-openai-key-2" }
-                      ]
+                      "updated_at": "2025-08-12T05:52:00.447969189Z"
                     },
                     {
                       "id": 2,
@@ -187,10 +183,7 @@ public class GptLoadService {
                       "proxy_keys": "",
                       "last_validated_at": "2025-08-12T05:52:00.447891384Z",
                       "created_at": "2025-08-11T12:59:24.248414181Z",
-                      "updated_at": "2025-08-12T05:52:00.447969189Z",
-                      "api_keys": [
-                        { "id": 201, "key_value": "sk-anthropic-key-1" }
-                      ]
+                      "updated_at": "2025-08-12T05:52:00.447969189Z"
                     }
                   ]
                 }

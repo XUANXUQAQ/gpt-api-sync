@@ -32,6 +32,4 @@ public class GptLoadGroup {
     private String createdAt;
     @SerializedName("updated_at")
     private String updatedAt;
-    @SerializedName("api_keys")
-    private List<ApiKey> apiKeys;
 }

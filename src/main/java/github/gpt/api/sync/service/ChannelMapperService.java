@@ -1,5 +1,6 @@
 package github.gpt.api.sync.service;
 
+import github.gpt.api.sync.config.AppConfig;
 import github.gpt.api.sync.model.gptload.GptLoadGroup;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -34,11 +35,12 @@ public class ChannelMapperService {
         newApiChannel.setStatus(1); // 默认启用
         newApiChannel.setPriority(0);
 
-        // 使用 gpt-load 的第一个 API Key
-        if (gptLoadGroup.getApiKeys() != null && !gptLoadGroup.getApiKeys().isEmpty()) {
-            newApiChannel.setKey(gptLoadGroup.getApiKeys().get(0).getKeyValue());
+        // 设置key，优先使用proxy_keys，如果为空则使用全局的auth key
+        String proxyKeys = gptLoadGroup.getProxyKeys();
+        if (proxyKeys != null && !proxyKeys.trim().isEmpty()) {
+            newApiChannel.setKey(proxyKeys);
         } else {
-            newApiChannel.setKey(""); // 如果没有 key，则设置为空字符串
+            newApiChannel.setKey(AppConfig.GPT_LOAD_AUTH_KEY);
         }
 
         log.debug("映射 GptLoadGroup 到 NewApiChannel: {} -> {}", gptLoadGroup.getName(), newApiChannel.getName());
