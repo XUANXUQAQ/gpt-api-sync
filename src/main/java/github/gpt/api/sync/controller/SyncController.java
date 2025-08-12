@@ -8,6 +8,8 @@ import github.gpt.api.sync.service.NewApiService;
 import io.javalin.http.Context;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,7 @@ public class SyncController {
         int createdCount = 0;
         int updatedCount = 0;
         int failedCount = 0;
+        List<NewApiChannel> newlyCreatedChannels = new ArrayList<>();
 
         try {
             // 1. 从 gpt-load 获取源分组
@@ -66,28 +69,61 @@ public class SyncController {
 
                 NewApiChannel existingChannel = existingChannelsMap.get(channelToSync.getBaseUrl());
 
-                if (existingChannel != null) {
-                    // 更新现有渠道
-                    channelToSync.setId(existingChannel.getId()); // 必须设置ID才能更新
-                    log.info("找到匹配渠道，准备更新: {} (ID: {})", channelToSync.getName(), channelToSync.getId());
-                    if (newApiService.updateChannel(channelToSync)) {
-                        updatedCount++;
+                try {
+                    if (existingChannel != null) {
+                        // 更新现有渠道
+                        channelToSync.setId(existingChannel.getId());
+                        log.info("找到匹配渠道，准备更新: {} (ID: {})", channelToSync.getName(), channelToSync.getId());
+                        if (newApiService.updateChannel(channelToSync)) {
+                            updatedCount++;
+                            // 更新成功后，立即获取模型并再次更新
+                            updateModelsForChannel(channelToSync);
+                        } else {
+                            failedCount++;
+                            log.error("更新渠道失败: {}", channelToSync.getName());
+                        }
                     } else {
-                        failedCount++;
-                        log.error("更新渠道失败: {}", channelToSync.getName());
+                        // 创建新渠道
+                        log.info("未找到匹配渠道，准备创建: {}", channelToSync.getName());
+                        if (newApiService.createChannel(channelToSync)) {
+                            createdCount++;
+                            // 优化：先记录下来，循环结束后再统一处理
+                            newlyCreatedChannels.add(channelToSync);
+                        } else {
+                            failedCount++;
+                            log.error("创建渠道失败: {}", channelToSync.getName());
+                        }
                     }
-                } else {
-                    // 创建新渠道
-                    log.info("未找到匹配渠道，准备创建: {}", channelToSync.getName());
-                    if (newApiService.createChannel(channelToSync)) {
-                        createdCount++;
-                    } else {
-                        failedCount++;
-                        log.error("创建渠道失败: {}", channelToSync.getName());
-                    }
+                } catch (Exception e) {
+                    failedCount++;
+                    log.error("处理渠道 {} 时发生异常", channelToSync.getName(), e);
                 }
             }
+
             log.info("渠道同步处理完成。创建: {}, 更新: {}, 失败: {}", createdCount, updatedCount, failedCount);
+
+            // 3.5. 为新创建的渠道获取并更新模型
+            if (!newlyCreatedChannels.isEmpty()) {
+                log.info("步骤 3.5/4: 为 {} 个新创建的渠道更新模型列表...", newlyCreatedChannels.size());
+                try {
+                    List<NewApiChannel> refreshedChannels = newApiService.getAllChannels();
+                    Map<String, NewApiChannel> refreshedChannelsMap = new HashMap<>();
+                    for (NewApiChannel channel : refreshedChannels) {
+                        refreshedChannelsMap.put(channel.getBaseUrl(), channel);
+                    }
+
+                    for (NewApiChannel newChannel : newlyCreatedChannels) {
+                        NewApiChannel fullNewChannel = refreshedChannelsMap.get(newChannel.getBaseUrl());
+                        if (fullNewChannel != null) {
+                            updateModelsForChannel(fullNewChannel);
+                        } else {
+                            log.error("无法在刷新后找到新创建的渠道: {}", newChannel.getName());
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("为新创建的渠道更新模型时发生错误", e);
+                }
+            }
 
             // 4. 准备并返回结果
             long endTime = System.currentTimeMillis();
@@ -114,6 +150,25 @@ public class SyncController {
             result.put("duration_ms", duration);
 
             ctx.status(500).json(result);
+        }
+    }
+
+    private void updateModelsForChannel(NewApiChannel channel) {
+        log.info("步骤 3.5/4: 为渠道 {} (ID: {}) 获取并更新模型列表...", channel.getName(), channel.getId());
+        try {
+            List<String> models = newApiService.fetchModelsForChannel(channel.getId());
+            if (models != null && !models.isEmpty()) {
+                channel.setModels(String.join(",", models));
+                if (newApiService.updateChannel(channel)) {
+                    log.info("成功为渠道 {} 更新了 {} 个模型", channel.getName(), models.size());
+                } else {
+                    log.error("为渠道 {} 更新模型列表失败", channel.getName());
+                }
+            } else {
+                log.info("渠道 {} 没有可用的模型列表", channel.getName());
+            }
+        } catch (IOException e) {
+            log.error("为渠道 {} 获取模型列表时发生IO异常", channel.getName(), e);
         }
     }
 }

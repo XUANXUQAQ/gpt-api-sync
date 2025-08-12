@@ -167,6 +167,53 @@ public class NewApiService {
 
 
     /**
+     * 为指定渠道获取可用模型列表
+     *
+     * @param channelId 渠道ID
+     * @return 模型名称列表
+     * @throws IOException 当API调用失败时抛出异常
+     */
+    public List<String> fetchModelsForChannel(int channelId) throws IOException {
+        String url = newApiBaseUrl + "/api/channel/fetch_models/" + channelId;
+        log.info("正在为渠道ID {} 获取模型列表: {}", channelId, url);
+
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+        connection.setRequestProperty("New-Api-User", newApiUserId);
+        connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
+        connection.setReadTimeout(AppConfig.READ_TIMEOUT);
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode != 200) {
+            String errorMsg = "为渠道 " + channelId + " 获取模型列表失败. 响应码: " + responseCode;
+            log.error(errorMsg);
+            throw new IOException(errorMsg);
+        }
+
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+        }
+
+        // 假设响应体是 {"data": ["model1", "model2"], ...}
+        Map<String, Object> apiResponse = gson.fromJson(response.toString(), new com.google.gson.reflect.TypeToken<Map<String, Object>>() {
+        }.getType());
+
+        if (apiResponse == null || !apiResponse.containsKey("data") || !(apiResponse.get("data") instanceof List)) {
+            throw new IOException("从 fetch_models API 返回的响应格式无效");
+        }
+
+        @SuppressWarnings("unchecked")
+        List<String> models = (List<String>) apiResponse.get("data");
+        log.info("成功为渠道ID {} 获取到 {} 个模型", channelId, models.size());
+        return models;
+    }
+
+    /**
      * 获取所有渠道信息
      *
      * @return 渠道列表
