@@ -265,23 +265,57 @@ public class NewApiService {
     private Map<String, Object> buildChannelData(NewApiChannel channel) {
         Map<String, Object> data = new HashMap<>();
 
+        // 基本信息
         data.put("id", channel.getId());
         data.put("name", channel.getName());
         data.put("type", channel.getType());
-        data.put("key", channel.getKey());
         data.put("status", channel.getStatus());
         data.put("priority", channel.getPriority());
+        data.put("weight", channel.getWeight());
+        data.put("auto_ban", channel.getAutoBan());
 
-        if (channel.getBaseUrl() != null && !channel.getBaseUrl().isEmpty()) {
+        // 字符串和复杂类型字段，进行非空检查
+        if (channel.getKey() != null) {
+            data.put("key", channel.getKey());
+        }
+        if (channel.getOpenaiOrganization() != null) {
+            data.put("openai_organization", channel.getOpenaiOrganization());
+        }
+        if (channel.getTestModel() != null) {
+            data.put("test_model", channel.getTestModel());
+        }
+        if (channel.getBaseUrl() != null) {
             data.put("base_url", channel.getBaseUrl());
         }
-
-        if (channel.getGroupName() != null && !channel.getGroupName().isEmpty()) {
+        if (channel.getOther() != null) {
+            data.put("other", channel.getOther());
+        }
+        if (channel.getModels() != null) {
+            data.put("models", channel.getModels());
+        }
+        if (channel.getGroupName() != null) {
             data.put("group", channel.getGroupName());
         }
-
-        if (channel.getModels() != null && !channel.getModels().isEmpty()) {
-            data.put("models", channel.getModels());
+        if (channel.getModelMapping() != null) {
+            data.put("model_mapping", channel.getModelMapping());
+        }
+        if (channel.getStatusCodeMapping() != null) {
+            data.put("status_code_mapping", channel.getStatusCodeMapping());
+        }
+        if (channel.getOtherInfo() != null) {
+            data.put("other_info", channel.getOtherInfo());
+        }
+        if (channel.getSettings() != null) {
+            data.put("settings", channel.getSettings());
+        }
+        if (channel.getTag() != null) {
+            data.put("tag", channel.getTag());
+        }
+        if (channel.getSetting() != null) {
+            data.put("setting", channel.getSetting());
+        }
+        if (channel.getChannelInfo() != null) {
+            data.put("channel_info", channel.getChannelInfo());
         }
 
         return data;

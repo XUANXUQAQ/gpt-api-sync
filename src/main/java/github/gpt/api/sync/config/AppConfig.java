@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 public class AppConfig {
@@ -30,6 +32,9 @@ public class AppConfig {
     public static final int CONNECTION_TIMEOUT;
     public static final int READ_TIMEOUT;
 
+    // 模型重定向配置
+    public static final List<String> STANDARD_MODELS;
+
     static {
         configData = loadConfig();
 
@@ -45,6 +50,10 @@ public class AppConfig {
 
         CONNECTION_TIMEOUT = getIntEnv("CONNECTION_TIMEOUT", configData.getSync().getConnectionTimeout());
         READ_TIMEOUT = getIntEnv("READ_TIMEOUT", configData.getSync().getReadTimeout());
+
+        STANDARD_MODELS = configData.getModelRedirect() != null ?
+                Collections.unmodifiableList(configData.getModelRedirect().getStandardModels()) :
+                Collections.emptyList();
 
         logConfiguration();
     }
@@ -69,6 +78,7 @@ public class AppConfig {
         log.info("SERVER_PORT: {}", SERVER_PORT);
         log.info("CONNECTION_TIMEOUT: {}ms", CONNECTION_TIMEOUT);
         log.info("READ_TIMEOUT: {}ms", READ_TIMEOUT);
+        log.info("STANDARD_MODELS_COUNT: {}", STANDARD_MODELS.size());
         log.info("==================================================");
     }
 
@@ -105,6 +115,7 @@ public class AppConfig {
         private Server server = new Server();
         private Sync sync = new Sync();
         private Log log = new Log();
+        private ModelRedirect modelRedirect = new ModelRedirect();
     }
 
     @Data
@@ -135,4 +146,9 @@ public class AppConfig {
     private static class Log {
         private String level = "INFO";
     }
+}
+
+@Data
+class ModelRedirect {
+    private List<String> standardModels = Collections.emptyList();
 }

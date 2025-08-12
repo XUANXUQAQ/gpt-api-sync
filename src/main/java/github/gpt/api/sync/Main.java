@@ -6,6 +6,7 @@ import github.gpt.api.sync.controller.ApiController;
 import github.gpt.api.sync.controller.SyncController;
 import github.gpt.api.sync.service.ChannelMapperService;
 import github.gpt.api.sync.service.GptLoadService;
+import github.gpt.api.sync.service.ModelRedirectService;
 import github.gpt.api.sync.service.NewApiService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -21,6 +22,7 @@ public class Main {
     private static GptLoadService gptLoadService;
     private static NewApiService newApiService;
     private static ChannelMapperService channelMapperService;
+    private static ModelRedirectService modelRedirectService;
 
     public static void main(String[] args) {
         log.info("GPT-API同步服务启动中...");
@@ -68,6 +70,10 @@ public class Main {
         channelMapperService = new ChannelMapperService();
         log.info("ChannelMapperService 初始化完成");
 
+        // 初始化ModelRedirectService
+        modelRedirectService = new ModelRedirectService();
+        log.info("ModelRedirectService 初始化完成");
+
         // 测试服务连接
         testServicesConnection();
 
@@ -78,7 +84,7 @@ public class Main {
      * 设置Web服务器和路由
      */
     private static Javalin setupWebServer() {
-        SyncController syncController = new SyncController(gptLoadService, newApiService, channelMapperService);
+        SyncController syncController = new SyncController(gptLoadService, newApiService, channelMapperService, modelRedirectService);
         ApiController apiController = new ApiController(gptLoadService, newApiService);
 
         return Javalin.create(config -> {
