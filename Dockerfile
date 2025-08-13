@@ -12,4 +12,4 @@ COPY target/gpt-api-sync-1.0.0.jar /app/gpt-api-sync.jar
 EXPOSE 7000
 
 # 启动应用
-CMD ["/app/custom-jre/bin/java", "-jar", "/app/gpt-api-sync.jar"]
+CMD /app/custom-jre/bin/java -jar /app/gpt-api-sync.jar
