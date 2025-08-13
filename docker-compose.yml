@@ -1,7 +1,8 @@
 version: '3.8'
 services:
   gpt-api-sync:
-    name: gpt-api-sync
+    container_name: gpt-api-sync
+    restart: always
     image: ghcr.io/xuanxuqaq/gpt-api-sync:latest
     ports:
       - "7000:7000"
