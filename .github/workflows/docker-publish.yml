@@ -46,6 +46,11 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
+    - name: Create custom JRE
+      run: |
+        jdeps --multi-release 21 --print-module-deps --ignore-missing-deps --class-path "target/lib/*" target/classes > jdeps.txt
+        jlink --add-modules $(cat jdeps.txt | tr -d '\n' | sed 's/,$//') --strip-debug --no-header-files --no-man-pages --output custom-jre
+
     - name: Convert owner to lowercase
       id: lower_owner
       run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
