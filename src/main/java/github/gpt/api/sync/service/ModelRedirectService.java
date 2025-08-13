@@ -110,12 +110,44 @@ public class ModelRedirectService {
     }
 
     /**
-     * 计算两个字符串之间的Levenshtein距离。
+     * 计算两个字符串之间的Levenshtein距离，使用滑动窗口比较子串。
+     * 这对于比较 'claude-4-sonnet' 和 'claude-sonnet-4-20251233' 这样的情况很有用。
      */
     private int calculateLevenshteinDistance(String s1, String s2) {
         s1 = s1.toLowerCase();
         s2 = s2.toLowerCase();
 
+        String shorter, longer;
+        if (s1.length() < s2.length()) {
+            shorter = s1;
+            longer = s2;
+        } else {
+            shorter = s2;
+            longer = s1;
+        }
+
+        int minDistance = Integer.MAX_VALUE;
+
+        // 在较长的字符串上滑动一个与较短字符串等长的窗口
+        for (int i = 0; i <= longer.length() - shorter.length(); i++) {
+            String sub = longer.substring(i, i + shorter.length());
+            int distance = rawLevenshteinDistance(shorter, sub);
+            if (distance < minDistance) {
+                minDistance = distance;
+            }
+            // 优化：如果找到了完美匹配（距离为0），则无需继续搜索
+            if (minDistance == 0) {
+                break;
+            }
+        }
+        return minDistance;
+    }
+
+    /**
+     * 计算两个字符串之间的原始Levenshtein距离。
+     */
+    private int rawLevenshteinDistance(String s1, String s2) {
+        // s1 and s2 are assumed to be pre-processed (e.g., toLowerCase)
         int[] costs = new int[s2.length() + 1];
         for (int i = 0; i <= s1.length(); i++) {
             int lastValue = i;
