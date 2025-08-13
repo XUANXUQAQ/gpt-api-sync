@@ -3,10 +3,7 @@ package github.gpt.api.sync.service;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class ModelRedirectService {
@@ -20,9 +17,9 @@ public class ModelRedirectService {
      * @param actualModels   渠道实际支持的模型名称列表
      * @return 一个JSON格式的字符串，代表模型映射关系
      */
-    public String generateModelMapping(List<String> standardModels, List<String> actualModels) {
+    public Map<String, String> generateModelMapping(List<String> standardModels, List<String> actualModels) {
         if (standardModels == null || standardModels.isEmpty() || actualModels == null || actualModels.isEmpty()) {
-            return "{}";
+            return Collections.emptyMap();
         }
 
         Map<String, String> modelMap = new HashMap<>();
@@ -44,7 +41,7 @@ public class ModelRedirectService {
             }
         }
 
-        return gson.toJson(modelMap);
+        return modelMap;
     }
 
     /**

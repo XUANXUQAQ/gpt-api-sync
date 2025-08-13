@@ -1,7 +1,8 @@
 package github.gpt.api.sync.controller;
 
-import github.gpt.api.sync.model.gptload.GptLoadGroup;
+import com.google.gson.Gson;
 import github.gpt.api.sync.config.AppConfig;
+import github.gpt.api.sync.model.gptload.GptLoadGroup;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
 import github.gpt.api.sync.service.ChannelMapperService;
 import github.gpt.api.sync.service.GptLoadService;
@@ -12,14 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class SyncController {
 
+    private static final Gson gson = new Gson();
     private final GptLoadService gptLoadService;
     private final NewApiService newApiService;
     private final ChannelMapperService channelMapperService;
@@ -163,18 +162,27 @@ public class SyncController {
         try {
             List<String> models = newApiService.fetchModelsForChannel(channel.getId());
             if (models != null && !models.isEmpty()) {
-                // 更新模型列表
-                channel.setModels(String.join(",", models));
-                log.info("为渠道 {} 获取到 {} 个模型", channel.getName(), models.size());
+                log.info("为渠道 {} 获取到 {} 个原始模型", channel.getName(), models.size());
+
+                // 使用Set来合并模型列表并自动去重
+                Set<String> finalModels = new HashSet<>(models);
 
                 // 生成并设置模型重定向映射
-                String modelMappingJson = modelRedirectService.generateModelMapping(AppConfig.STANDARD_MODELS, models);
-                if (modelMappingJson != null && !modelMappingJson.equals("{}")) {
-                    channel.setModelMapping(modelMappingJson);
-                    log.info("为渠道 {} 生成了模型重定向映射: {}", channel.getName(), modelMappingJson);
+                var modelMapping = modelRedirectService.generateModelMapping(AppConfig.STANDARD_MODELS, models);
+                if (modelMapping != null && !modelMapping.isEmpty()) {
+                    channel.setModelMapping(gson.toJson(modelMapping));
+                    log.info("为渠道 {} 生成了模型重定向映射: {}", channel.getName(), modelMapping);
+
+                    // 解析映射，并将标准模型添加到最终列表
+                    finalModels.addAll(modelMapping.keySet());
+                    log.info("为渠道 {} 添加了 {} 个标准模型到模型列表", channel.getName(), modelMapping.size());
                 } else {
                     log.info("渠道 {} 无需模型重定向", channel.getName());
                 }
+
+                // 更新模型列表
+                channel.setModels(String.join(",", finalModels));
+                log.info("为渠道 {} 设置最终模型列表 ({} 个)", channel.getName(), finalModels.size());
 
                 // 统一更新渠道
                 if (newApiService.updateChannel(channel)) {
