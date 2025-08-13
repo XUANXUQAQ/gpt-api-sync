@@ -8,21 +8,15 @@ WORKDIR /app
 COPY target /app/target
 
 # 找出依赖的模块
-RUN ls -l target
 RUN jdeps \
     --multi-release 21 \
     --print-module-deps \
     --ignore-missing-deps \
-    --class-path "target/lib/*" \
-    target/classes > /app/jdeps.txt
-
-# 打印模块依赖项以进行调试
-RUN cat /app/jdeps.txt
+    target/gpt-api-sync-1.0.0.jar > /app/jdeps.txt
 
 # 创建自定义的 JRE
 RUN jlink \
-    --module-path "target/lib" \
-    --add-modules $(cat /app/jdeps.txt | tr -d '\n') \
+    --add-modules $(cat /app/jdeps.txt | tr -d '\n' | sed 's/,$//') \
     --strip-debug \
     --no-header-files \
     --no-man-pages \
