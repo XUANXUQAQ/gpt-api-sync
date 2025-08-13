@@ -4,11 +4,8 @@ FROM openjdk:21-jdk as builder
 # 设置工作目录
 WORKDIR /app
 
-# 复制整个项目到镜像中
-COPY . .
-
-# 打包应用
-RUN mvn package
+# 复制 target 目录到镜像中
+COPY target /app/target
 
 # 找出依赖的模块
 RUN jdeps \
