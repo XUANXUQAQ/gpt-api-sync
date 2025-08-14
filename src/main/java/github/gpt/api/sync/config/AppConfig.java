@@ -31,6 +31,7 @@ public class AppConfig {
     public static String NEW_API_BASE_URL;
     public static String NEW_API_ACCESS_TOKEN;
     public static String NEW_API_USER_ID;
+    public static AuthHeaderType NEW_API_AUTH_HEADER_TYPE;
 
     // 服务器配置
     public static int SERVER_PORT;
@@ -82,6 +83,13 @@ public class AppConfig {
         NEW_API_BASE_URL = getEnvOrDefault("NEW_API_BASE_URL", configData.getNewApi().getBaseUrl());
         NEW_API_ACCESS_TOKEN = getEnvOrDefault("NEW_API_ACCESS_TOKEN", configData.getNewApi().getAccessToken());
         NEW_API_USER_ID = getEnvOrDefault("NEW_API_USER_ID", configData.getNewApi().getUserId());
+        String authHeaderTypeStr = getEnvOrDefault("NEW_API_AUTH_HEADER_TYPE", AuthHeaderType.NEW_API.name());
+        try {
+            NEW_API_AUTH_HEADER_TYPE = AuthHeaderType.valueOf(authHeaderTypeStr);
+        } catch (IllegalArgumentException e) {
+            log.warn("无效的 authHeaderType 值 '{}', 将使用默认值 'NEW_API'", authHeaderTypeStr);
+            NEW_API_AUTH_HEADER_TYPE = AuthHeaderType.NEW_API;
+        }
 
         SERVER_PORT = getIntEnv("SERVER_PORT", configData.getServer().getPort());
 
@@ -132,6 +140,7 @@ public class AppConfig {
         log.info("NEW_API_BASE_URL: {}", NEW_API_BASE_URL);
         log.info("NEW_API_ACCESS_TOKEN: {}", NEW_API_ACCESS_TOKEN.isEmpty() ? "未设置" : "已设置");
         log.info("NEW_API_USER_ID: {}", NEW_API_USER_ID);
+        log.info("NEW_API_AUTH_HEADER_TYPE: {}", NEW_API_AUTH_HEADER_TYPE.getHeaderName());
         log.info("SERVER_PORT: {}", SERVER_PORT);
         log.info("CONNECTION_TIMEOUT: {}ms", CONNECTION_TIMEOUT);
         log.info("READ_TIMEOUT: {}ms", READ_TIMEOUT);
