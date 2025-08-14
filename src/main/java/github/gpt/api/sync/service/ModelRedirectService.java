@@ -117,30 +117,29 @@ public class ModelRedirectService {
         s1 = s1.toLowerCase();
         s2 = s2.toLowerCase();
 
-        String shorter, longer;
-        if (s1.length() < s2.length()) {
-            shorter = s1;
-            longer = s2;
-        } else {
-            shorter = s2;
-            longer = s1;
-        }
+        String shorter = s1; // 标准模型作为 shorter
+        String longer = s2;  // 实际模型作为 longer
 
         int minDistance = Integer.MAX_VALUE;
 
-        // 在较长的字符串上滑动一个与较短字符串等长的窗口
-        for (int i = 0; i <= longer.length() - shorter.length(); i++) {
-            String sub = longer.substring(i, i + shorter.length());
-            int distance = rawLevenshteinDistance(shorter, sub);
-            if (distance < minDistance) {
-                minDistance = distance;
+        if (longer.length() < shorter.length()) {
+            // 如果实际模型较短，直接计算距离
+            return rawLevenshteinDistance(shorter, longer);
+        } else {
+            // 在实际模型上滑动标准模型长度的窗口
+            for (int i = 0; i <= longer.length() - shorter.length(); i++) {
+                String sub = longer.substring(i, i + shorter.length());
+                int distance = rawLevenshteinDistance(shorter, sub);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+                // 优化：如果找到了完美匹配（距离为0），则无需继续搜索
+                if (minDistance == 0) {
+                    break;
+                }
             }
-            // 优化：如果找到了完美匹配（距离为0），则无需继续搜索
-            if (minDistance == 0) {
-                break;
-            }
+            return minDistance;
         }
-        return minDistance;
     }
 
     /**
