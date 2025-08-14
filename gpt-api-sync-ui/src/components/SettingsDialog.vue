@@ -78,6 +78,20 @@
               <Label for="newapi-userid">User ID</Label>
               <Input id="newapi-userid" v-model="localConfig.newApi.userId" />
             </div>
+            <div class="space-y-2">
+              <Label for="newapi-authtype">Auth Type</Label>
+              <Select v-model="localConfig.newApi.authType">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an auth type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="NEW_API">New-API</SelectItem>
+                    <SelectItem value="VELOERA">Veloera</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
           </TabsContent>
 
           <TabsContent value="models" class="space-y-4 p-2">

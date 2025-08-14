@@ -82,7 +82,7 @@ public class NewApiService {
             connection.setRequestProperty("Content-Type", "application/json");
             if (AppConfig.NEW_API_ACCESS_TOKEN != null && !AppConfig.NEW_API_ACCESS_TOKEN.isEmpty()) {
                 connection.setRequestProperty("Authorization", "Bearer " + AppConfig.NEW_API_ACCESS_TOKEN);
-                connection.setRequestProperty("New-Api-User", AppConfig.NEW_API_USER_ID);
+                connection.setRequestProperty(AppConfig.NEW_API_AUTH_HEADER_TYPE.getHeaderName(), AppConfig.NEW_API_USER_ID);
             }
             connection.setDoOutput(true);
 
@@ -134,7 +134,7 @@ public class NewApiService {
             connection.setRequestProperty("Content-Type", "application/json");
             if (AppConfig.NEW_API_ACCESS_TOKEN != null && !AppConfig.NEW_API_ACCESS_TOKEN.isEmpty()) {
                 connection.setRequestProperty("Authorization", "Bearer " + AppConfig.NEW_API_ACCESS_TOKEN);
-                connection.setRequestProperty("New-Api-User", AppConfig.NEW_API_USER_ID);
+                connection.setRequestProperty(AppConfig.NEW_API_AUTH_HEADER_TYPE.getHeaderName(), AppConfig.NEW_API_USER_ID);
             }
             connection.setDoOutput(true);
 
@@ -176,7 +176,7 @@ public class NewApiService {
         HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + AppConfig.NEW_API_ACCESS_TOKEN);
-        connection.setRequestProperty("New-Api-User", AppConfig.NEW_API_USER_ID);
+        connection.setRequestProperty(AppConfig.NEW_API_AUTH_HEADER_TYPE.getHeaderName(), AppConfig.NEW_API_USER_ID);
         connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
         connection.setReadTimeout(AppConfig.READ_TIMEOUT);
 
@@ -222,7 +222,7 @@ public class NewApiService {
         HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + AppConfig.NEW_API_ACCESS_TOKEN);
-        connection.setRequestProperty("New-Api-User", AppConfig.NEW_API_USER_ID);
+        connection.setRequestProperty(AppConfig.NEW_API_AUTH_HEADER_TYPE.getHeaderName(), AppConfig.NEW_API_USER_ID);
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setConnectTimeout(AppConfig.CONNECTION_TIMEOUT);
         connection.setReadTimeout(AppConfig.READ_TIMEOUT);

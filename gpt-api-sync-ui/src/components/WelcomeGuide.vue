@@ -25,6 +25,22 @@
                         <Input id="newapi-token" type="password" v-model="config.newApi.accessToken" />
                         <Label for="newapi-userid">User ID</Label>
                         <Input id="newapi-userid" v-model="config.newApi.userId" />
+                        <Label for="newapi-authtype">Auth Type</Label>
+                        <Select id="newapi-authtype" v-model="config.newApi.authType">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select an auth type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="NEW_API">
+                                        New-API
+                                    </SelectItem>
+                                    <SelectItem value="VELOERA">
+                                        Veloera
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>
@@ -42,6 +58,14 @@ import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 import { LoaderCircle } from 'lucide-vue-next';
 import { getConfig, updateConfig } from '@/lib/api';
 
@@ -56,6 +80,7 @@ const config = ref({
         baseUrl: '',
         accessToken: '',
         userId: '',
+        authType: 'NEW_API',
     },
 });
 const isSaving = ref(false);
