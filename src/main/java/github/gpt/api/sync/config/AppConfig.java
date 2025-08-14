@@ -83,7 +83,7 @@ public class AppConfig {
         NEW_API_BASE_URL = getEnvOrDefault("NEW_API_BASE_URL", configData.getNewApi().getBaseUrl());
         NEW_API_ACCESS_TOKEN = getEnvOrDefault("NEW_API_ACCESS_TOKEN", configData.getNewApi().getAccessToken());
         NEW_API_USER_ID = getEnvOrDefault("NEW_API_USER_ID", configData.getNewApi().getUserId());
-        String authHeaderTypeStr = getEnvOrDefault("NEW_API_AUTH_HEADER_TYPE", AuthHeaderType.NEW_API.name());
+        String authHeaderTypeStr = getEnvOrDefault("NEW_API_AUTH_HEADER_TYPE", configData.getNewApi().getAuthType());
         try {
             NEW_API_AUTH_HEADER_TYPE = AuthHeaderType.valueOf(authHeaderTypeStr);
         } catch (IllegalArgumentException e) {
@@ -188,6 +188,7 @@ public class AppConfig {
         private String baseUrl = "http://localhost:3000";
         private String accessToken = "";
         private String userId = "1";
+        private String authType = AuthHeaderType.NEW_API.name();
     }
 
     @Data
