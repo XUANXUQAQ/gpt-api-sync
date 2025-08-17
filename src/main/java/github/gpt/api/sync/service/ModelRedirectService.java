@@ -1,14 +1,11 @@
 package github.gpt.api.sync.service;
 
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 @Slf4j
 public class ModelRedirectService {
-
-    private final Gson gson = new Gson();
 
     /**
      * 根据实际模型列表，为标准模型列表生成重定向映射。
@@ -68,23 +65,68 @@ public class ModelRedirectService {
             return null;
         }
 
-        // 阶段1: 包含(Substring)优先匹配
-        String bestContainMatch = null;
-        int shortestLength = Integer.MAX_VALUE;
-
-        for (String target : eligibleTargets) {
-            if (target.contains(source)) {
-                if (target.length() < shortestLength) {
-                    shortestLength = target.length();
-                    bestContainMatch = target;
+        // 对于很短的模型名称（长度 <= 3），使用更严格的匹配策略
+        if (source.length() <= 3) {
+            // 优先精确匹配
+            for (String target : eligibleTargets) {
+                if (target.equals(source)) {
+                    log.trace("为短模型名 '{}' 找到精确匹配: '{}'", source, target);
+                    return target;
                 }
             }
-        }
 
-        // 如果找到了包含匹配，直接返回最短的那个
-        if (bestContainMatch != null) {
-            log.trace("为 '{}' 找到包含优先匹配: '{}'", source, bestContainMatch);
-            return bestContainMatch;
+            // 其次前缀匹配
+            String bestPrefixMatch = null;
+            int shortestPrefixLength = Integer.MAX_VALUE;
+            for (String target : eligibleTargets) {
+                if (target.startsWith(source + "-") || target.startsWith(source + "_")) {
+                    if (target.length() < shortestPrefixLength) {
+                        shortestPrefixLength = target.length();
+                        bestPrefixMatch = target;
+                    }
+                }
+            }
+
+            if (bestPrefixMatch != null) {
+                log.trace("为短模型名 '{}' 找到前缀匹配: '{}'", source, bestPrefixMatch);
+                return bestPrefixMatch;
+            }
+
+            // 最后才考虑单词边界匹配
+            String bestWordBoundaryMatch = null;
+            int shortestWordBoundaryLength = Integer.MAX_VALUE;
+            for (String target : eligibleTargets) {
+                if (isWordBoundaryMatch(source, target)) {
+                    if (target.length() < shortestWordBoundaryLength) {
+                        shortestWordBoundaryLength = target.length();
+                        bestWordBoundaryMatch = target;
+                    }
+                }
+            }
+
+            if (bestWordBoundaryMatch != null) {
+                log.trace("为短模型名 '{}' 找到单词边界匹配: '{}'", source, bestWordBoundaryMatch);
+                return bestWordBoundaryMatch;
+            }
+        } else {
+            // 对于较长的模型名称，使用改进的包含匹配逻辑
+            String bestContainMatch = null;
+            int shortestLength = Integer.MAX_VALUE;
+
+            for (String target : eligibleTargets) {
+                if (target.contains(source)) {
+                    if (target.length() < shortestLength) {
+                        shortestLength = target.length();
+                        bestContainMatch = target;
+                    }
+                }
+            }
+
+            // 如果找到了包含匹配，直接返回最短的那个
+            if (bestContainMatch != null) {
+                log.trace("为 '{}' 找到包含优先匹配: '{}'", source, bestContainMatch);
+                return bestContainMatch;
+            }
         }
 
         // 阶段2: Levenshtein距离作为后备
@@ -92,6 +134,24 @@ public class ModelRedirectService {
         int minDistance = Integer.MAX_VALUE;
 
         for (String target : eligibleTargets) {
+            // 对于很短的目标模型名，需要额外验证
+            if (target.length() <= 3 && source.length() > target.length() * 2) {
+                // 检查是否是合理的短目标匹配
+                if (!isValidShortTargetMatch(source, target)) {
+                    log.debug("在Levenshtein匹配中排除了不合理的短目标: source='{}', target='{}'", source, target);
+                    continue;
+                }
+            }
+
+            // 对于很短的源模型名匹配到很长的目标模型名，需要额外验证
+            if (source.length() <= 3 && target.length() > source.length() * 3) {
+                // 检查是否是合理的短源匹配到长目标
+                if (!isValidShortSourceMatch(source, target)) {
+                    log.debug("在Levenshtein匹配中排除了不合理的短源到长目标匹配: source='{}', target='{}'", source, target);
+                    continue;
+                }
+            }
+
             int distance = calculateLevenshteinDistance(source, target);
             if (distance < minDistance) {
                 minDistance = distance;
@@ -169,5 +229,159 @@ public class ModelRedirectService {
             }
         }
         return costs[s2.length()];
+    }
+
+    /**
+     * 检查源字符串是否在目标字符串中作为完整单词存在
+     * 单词边界定义为：字符串开始、结束，或者非字母数字字符
+     */
+    private boolean isWordBoundaryMatch(String source, String target) {
+        String lowerSource = source.toLowerCase();
+        String lowerTarget = target.toLowerCase();
+
+        int index = lowerTarget.indexOf(lowerSource);
+        if (index == -1) {
+            return false;
+        }
+
+        // 检查所有匹配位置
+        while (index != -1) {
+            boolean validStart = (index == 0) || !Character.isLetterOrDigit(lowerTarget.charAt(index - 1));
+            boolean validEnd = (index + lowerSource.length() >= lowerTarget.length()) ||
+                               !Character.isLetterOrDigit(lowerTarget.charAt(index + lowerSource.length()));
+
+            if (validStart && validEnd) {
+                return true;
+            }
+
+            // 查找下一个匹配位置
+            index = lowerTarget.indexOf(lowerSource, index + 1);
+        }
+
+        return false;
+    }
+
+    /**
+     * 验证长标准模型名与短目标模型名的匹配是否合理
+     * 防止如 "claude-3.7-sonnet" 错误匹配到 "o3" 的情况
+     */
+    private boolean isValidShortTargetMatch(String source, String target) {
+        String lowerSource = source.toLowerCase();
+        String lowerTarget = target.toLowerCase();
+
+        // 1. 检查是否是精确的单词边界匹配
+        if (isWordBoundaryMatch(target, source)) {
+            return true;
+        }
+
+        // 2. 检查是否是有意义的前缀匹配
+        // 例如：gpt-4o 可以匹配到 gpt，但 claude-3.7-sonnet 不应该匹配到 o3
+        if (lowerSource.startsWith(lowerTarget + "-") || lowerSource.startsWith(lowerTarget + "_")) {
+            return true;
+        }
+
+        // 3. 检查是否是版本号相关的合理匹配
+        // 例如：claude-4-sonnet 可以匹配到 c4，但不应该匹配到随机的短字符串
+        if (isVersionRelatedMatch(lowerSource, lowerTarget)) {
+            return true;
+        }
+
+        // 4. 其他情况都认为是不合理的匹配
+        log.debug("拒绝不合理的短目标匹配: '{}' -> '{}'", source, target);
+        return false;
+    }
+
+    /**
+     * 检查是否是版本号相关的合理匹配
+     */
+    private boolean isVersionRelatedMatch(String source, String target) {
+        // 检查目标字符串是否可能是源字符串的有意义缩写
+        // 例如：claude-4 -> c4, gpt-3.5 -> g35
+
+        // 提取源字符串中的主要组件
+        String[] sourceParts = source.split("[-_.]");
+        StringBuilder abbreviation = new StringBuilder();
+
+        for (String part : sourceParts) {
+            if (!part.isEmpty()) {
+                // 取每个部分的首字母或数字
+                char firstChar = part.charAt(0);
+                if (Character.isLetterOrDigit(firstChar)) {
+                    abbreviation.append(firstChar);
+                }
+
+                // 如果部分包含数字，也添加数字
+                for (char c : part.toCharArray()) {
+                    if (Character.isDigit(c)) {
+                        abbreviation.append(c);
+                    }
+                }
+            }
+        }
+
+        // 检查生成的缩写是否与目标匹配
+        String generatedAbbr = abbreviation.toString().toLowerCase();
+        return generatedAbbr.equals(target) || generatedAbbr.contains(target) || target.contains(generatedAbbr);
+    }
+
+    /**
+     * 验证短源模型名与长目标模型名的匹配是否合理
+     * 防止如 "o3" 错误匹配到 "claude-4-sonnet" 的情况
+     */
+    private boolean isValidShortSourceMatch(String source, String target) {
+        String lowerSource = source.toLowerCase();
+        String lowerTarget = target.toLowerCase();
+
+        // 1. 检查是否是精确的单词边界匹配
+        if (isWordBoundaryMatch(source, target)) {
+            return true;
+        }
+
+        // 2. 检查是否是有意义的前缀匹配
+        // 例如：o3 可以匹配到 o3-mini，但不应该匹配到 claude-4-sonnet
+        if (lowerTarget.startsWith(lowerSource + "-") || lowerTarget.startsWith(lowerSource + "_")) {
+            return true;
+        }
+
+        // 3. 检查是否是版本号相关的合理匹配
+        // 例如：o3 可以匹配到 o3-2025，但不应该匹配到随机的长字符串
+        if (isVersionRelatedMatch(target, source)) {
+            return true;
+        }
+
+        // 4. 检查源字符串是否是目标字符串的合理缩写
+        if (isReasonableAbbreviation(source, target)) {
+            return true;
+        }
+
+        // 5. 其他情况都认为是不合理的匹配
+        log.debug("拒绝不合理的短源到长目标匹配: '{}' -> '{}'", source, target);
+        return false;
+    }
+
+    /**
+     * 检查源字符串是否是目标字符串的合理缩写
+     */
+    private boolean isReasonableAbbreviation(String source, String target) {
+        String lowerSource = source.toLowerCase();
+        String lowerTarget = target.toLowerCase();
+
+        // 提取目标字符串中的主要组件
+        String[] targetParts = lowerTarget.split("[-_.]");
+        StringBuilder abbreviation = new StringBuilder();
+
+        for (String part : targetParts) {
+            if (!part.isEmpty()) {
+                // 取每个部分的首字母
+                char firstChar = part.charAt(0);
+                if (Character.isLetterOrDigit(firstChar)) {
+                    abbreviation.append(firstChar);
+                }
+            }
+        }
+
+        // 检查生成的缩写是否与源匹配
+        String generatedAbbr = abbreviation.toString();
+        return generatedAbbr.contains(lowerSource) || lowerSource.contains(generatedAbbr);
     }
 }
