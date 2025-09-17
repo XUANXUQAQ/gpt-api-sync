@@ -75,7 +75,7 @@ public class GptLoadService {
                 throw new IOException("GPT-Load API返回空响应");
             }
 
-            if (apiResponse.getCode() != 0 || !"success".equalsIgnoreCase(apiResponse.getMessage())) {
+            if (apiResponse.getCode() != 0) {
                 String errorMsg = "GPT-Load API返回错误: " + (apiResponse.getMessage() != null ? apiResponse.getMessage() : "未知错误 (code: " + apiResponse.getCode() + ")");
                 log.error(errorMsg);
                 throw new IOException(errorMsg);
