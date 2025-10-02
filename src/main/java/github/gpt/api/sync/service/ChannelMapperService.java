@@ -38,12 +38,12 @@ public class ChannelMapperService {
         newApiChannel.setStatus(1); // 默认启用
         newApiChannel.setPriority(0);
 
-        // 设置key，优先使用proxy_keys，如果为空则使用全局的auth key
+        // 设置key，优先使用proxy_keys，如果为空则使用全局的api key
         String proxyKeys = gptLoadGroup.getProxyKeys();
         if (proxyKeys != null && !proxyKeys.trim().isEmpty()) {
             newApiChannel.setKey(proxyKeys);
         } else {
-            newApiChannel.setKey(AppConfig.GPT_LOAD_AUTH_KEY);
+            newApiChannel.setKey(AppConfig.GPT_LOAD_API_KEY);
         }
 
         log.debug("映射 GptLoadGroup 到 NewApiChannel: {} -> {}", gptLoadGroup.getName(), newApiChannel.getName());
