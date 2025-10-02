@@ -26,6 +26,7 @@ public class AppConfig {
     // GPT-Load配置
     public static String GPT_LOAD_BASE_URL;
     public static String GPT_LOAD_AUTH_KEY;
+    public static String GPT_LOAD_API_KEY;
 
     // New-API配置
     public static String NEW_API_BASE_URL;
@@ -79,6 +80,7 @@ public class AppConfig {
         // 从加载的配置初始化字段
         GPT_LOAD_BASE_URL = getEnvOrDefault("GPT_LOAD_BASE_URL", configData.getGptLoad().getBaseUrl());
         GPT_LOAD_AUTH_KEY = getEnvOrDefault("GPT_LOAD_AUTH_KEY", configData.getGptLoad().getAuthKey());
+        GPT_LOAD_API_KEY = getEnvOrDefault("GPT_LOAD_API_KEY", configData.getGptLoad().getApiKey());
 
         NEW_API_BASE_URL = getEnvOrDefault("NEW_API_BASE_URL", configData.getNewApi().getBaseUrl());
         NEW_API_ACCESS_TOKEN = getEnvOrDefault("NEW_API_ACCESS_TOKEN", configData.getNewApi().getAccessToken());
@@ -137,6 +139,7 @@ public class AppConfig {
         log.info("==================== 应用配置 ====================");
         log.info("GPT_LOAD_BASE_URL: {}", GPT_LOAD_BASE_URL);
         log.info("GPT_LOAD_AUTH_KEY: {}", GPT_LOAD_AUTH_KEY.isEmpty() ? "未设置" : "已设置");
+        log.info("GPT_LOAD_API_KEY: {}", GPT_LOAD_API_KEY.isEmpty() ? "未设置" : "已设置");
         log.info("NEW_API_BASE_URL: {}", NEW_API_BASE_URL);
         log.info("NEW_API_ACCESS_TOKEN: {}", NEW_API_ACCESS_TOKEN.isEmpty() ? "未设置" : "已设置");
         log.info("NEW_API_USER_ID: {}", NEW_API_USER_ID);
@@ -181,6 +184,7 @@ public class AppConfig {
     public static class GptLoad {
         private String baseUrl = "http://localhost:3001";
         private String authKey = "";
+        private String apiKey = "";
     }
 
     @Data
