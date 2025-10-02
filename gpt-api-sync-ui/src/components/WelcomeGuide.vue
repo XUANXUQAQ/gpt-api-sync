@@ -13,6 +13,8 @@
                         <Input id="gpt-baseurl" v-model="config.gptLoad.baseUrl" placeholder="http://localhost:8000" />
                         <Label for="gpt-authkey">Auth Key</Label>
                         <Input id="gpt-authkey" type="password" v-model="config.gptLoad.authKey" />
+                        <Label for="gpt-apikey">API Key</Label>
+                        <Input id="gpt-apikey" v-model="config.gptLoad.apiKey" />
                     </div>
                 </div>
                 <div>
@@ -75,6 +77,7 @@ const config = ref({
     gptLoad: {
         baseUrl: '',
         authKey: '',
+        apiKey: '',
     },
     newApi: {
         baseUrl: '',

@@ -63,10 +63,10 @@
               <Label for="gpt-authkey">Auth Key</Label>
               <Input id="gpt-authkey" type="password" v-model="localConfig.gptLoad.authKey" />
             </div>
-             <div class="space-y-2">
-               <Label for="gpt-apikey">API Key</Label>
-               <Input id="gpt-apikey" v-model="localConfig.gptLoad.apiKey" />
-             </div>
+            <div class="space-y-2">
+              <Label for="gpt-apikey">API Key</Label>
+              <Input id="gpt-apikey" v-model="localConfig.gptLoad.apiKey" />
+            </div>
           </TabsContent>
 
           <TabsContent value="new-api" class="space-y-4 p-2">
