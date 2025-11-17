@@ -71,12 +71,20 @@ public class NewApiService {
         try {
             String url = AppConfig.NEW_API_BASE_URL + "/api/channel/";
 
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("mode", "single");
-            requestBody.put("channel", buildChannelData(channel));
-            String jsonBody = gson.toJson(requestBody);
-
-            log.debug("正在创建渠道: {} - {}", channel.getName(), jsonBody);
+            // 根据 AuthHeaderType 构建不同的请求体
+            String jsonBody;
+            if (AppConfig.NEW_API_AUTH_HEADER_TYPE == AuthHeaderType.VELOERA) {
+                // Veloera 格式: 直接发送 channel 数据
+                jsonBody = gson.toJson(buildChannelData(channel));
+                log.debug("正在创建渠道 (Veloera): {} - {}", channel.getName(), jsonBody);
+            } else {
+                // New-API 格式: 需要 mode 和 channel 包装
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("mode", "single");
+                requestBody.put("channel", buildChannelData(channel));
+                jsonBody = gson.toJson(requestBody);
+                log.debug("正在创建渠道 (New-API): {} - {}", channel.getName(), jsonBody);
+            }
 
             HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestMethod("POST");
@@ -281,58 +289,86 @@ public class NewApiService {
      */
     private Map<String, Object> buildChannelData(NewApiChannel channel) {
         Map<String, Object> data = new HashMap<>();
+        boolean isVeloera = AppConfig.NEW_API_AUTH_HEADER_TYPE == AuthHeaderType.VELOERA;
 
-        // 基本信息
-        data.put("id", channel.getId());
-        data.put("name", channel.getName());
+        // 基本信息 - 始终包含
         data.put("type", channel.getType());
+        data.put("name", channel.getName() != null ? channel.getName() : "");
+        data.put("key", channel.getKey() != null ? channel.getKey() : "");
+        data.put("models", channel.getModels() != null ? channel.getModels() : "");
+        data.put("base_url", channel.getBaseUrl() != null ? channel.getBaseUrl() : "");
+        data.put("auto_ban", channel.getAutoBan());
+
+        // Veloera 需要 groups 数组，New-API 需要 group 字符串
+        if (isVeloera) {
+            // Veloera 使用 groups 数组
+            String groupName = channel.getGroupName() != null ? channel.getGroupName() : "default";
+            data.put("groups", new String[]{groupName});
+        } else {
+            // New-API 使用 group 字符串
+            if (channel.getGroupName() != null) {
+                data.put("group", channel.getGroupName());
+            }
+        }
+
+        // ID 字段 - 仅在更新时需要
+        if (channel.getId() > 0) {
+            data.put("id", channel.getId());
+        }
+
+        // 其他数值字段
         data.put("status", channel.getStatus());
         data.put("priority", channel.getPriority());
         data.put("weight", channel.getWeight());
-        data.put("auto_ban", channel.getAutoBan());
 
-        // 字符串和复杂类型字段，进行非空检查
-        if (channel.getKey() != null) {
-            data.put("key", channel.getKey());
-        }
-        if (channel.getOpenaiOrganization() != null) {
-            data.put("openai_organization", channel.getOpenaiOrganization());
-        }
-        if (channel.getTestModel() != null) {
-            data.put("test_model", channel.getTestModel());
-        }
-        if (channel.getBaseUrl() != null) {
-            data.put("base_url", channel.getBaseUrl());
-        }
-        if (channel.getOther() != null) {
-            data.put("other", channel.getOther());
-        }
-        if (channel.getModels() != null) {
-            data.put("models", channel.getModels());
-        }
-        if (channel.getGroupName() != null) {
-            data.put("group", channel.getGroupName());
-        }
-        if (channel.getModelMapping() != null) {
-            data.put("model_mapping", channel.getModelMapping());
-        }
-        if (channel.getStatusCodeMapping() != null) {
-            data.put("status_code_mapping", channel.getStatusCodeMapping());
-        }
-        if (channel.getOtherInfo() != null) {
-            data.put("other_info", channel.getOtherInfo());
-        }
-        if (channel.getSettings() != null) {
-            data.put("settings", channel.getSettings());
-        }
-        if (channel.getTag() != null) {
-            data.put("tag", channel.getTag());
-        }
-        if (channel.getSetting() != null) {
-            data.put("setting", channel.getSetting());
-        }
-        if (channel.getChannelInfo() != null) {
-            data.put("channel_info", channel.getChannelInfo());
+        // 可选字符串字段 - Veloera 需要空字符串，New-API 可以省略
+        if (isVeloera) {
+            data.put("openai_organization", channel.getOpenaiOrganization() != null ? channel.getOpenaiOrganization() : "");
+            data.put("test_model", channel.getTestModel() != null ? channel.getTestModel() : "");
+            data.put("other", channel.getOther() != null ? channel.getOther() : "");
+            data.put("model_mapping", channel.getModelMapping() != null ? channel.getModelMapping() : "");
+            data.put("status_code_mapping", channel.getStatusCodeMapping() != null ? channel.getStatusCodeMapping() : "");
+            data.put("other_info", channel.getOtherInfo() != null ? channel.getOtherInfo() : "");
+            data.put("tag", channel.getTag() != null ? channel.getTag() : "");
+            data.put("setting", channel.getSetting() != null ? channel.getSetting() : "");
+            data.put("param_override", ""); // Veloera 特有字段
+            data.put("system_prompt", ""); // Veloera 特有字段
+            data.put("model_prefix", ""); // Veloera 特有字段
+
+            // Veloera 的 max_input_tokens 字段
+            data.put("max_input_tokens", 0);
+        } else {
+            // New-API 格式 - 仅在非空时添加
+            if (channel.getOpenaiOrganization() != null) {
+                data.put("openai_organization", channel.getOpenaiOrganization());
+            }
+            if (channel.getTestModel() != null) {
+                data.put("test_model", channel.getTestModel());
+            }
+            if (channel.getOther() != null) {
+                data.put("other", channel.getOther());
+            }
+            if (channel.getModelMapping() != null) {
+                data.put("model_mapping", channel.getModelMapping());
+            }
+            if (channel.getStatusCodeMapping() != null) {
+                data.put("status_code_mapping", channel.getStatusCodeMapping());
+            }
+            if (channel.getOtherInfo() != null) {
+                data.put("other_info", channel.getOtherInfo());
+            }
+            if (channel.getSettings() != null) {
+                data.put("settings", channel.getSettings());
+            }
+            if (channel.getTag() != null) {
+                data.put("tag", channel.getTag());
+            }
+            if (channel.getSetting() != null) {
+                data.put("setting", channel.getSetting());
+            }
+            if (channel.getChannelInfo() != null) {
+                data.put("channel_info", channel.getChannelInfo());
+            }
         }
 
         return data;
