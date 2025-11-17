@@ -136,7 +136,11 @@ public class NewApiService {
             Map<String, Object> channelData = buildChannelData(channel);
             String jsonBody = gson.toJson(channelData);
 
-            log.debug("正在更新渠道: {} - {}", channel.getName(), jsonBody);
+            if (AppConfig.NEW_API_AUTH_HEADER_TYPE == AuthHeaderType.VELOERA) {
+                log.debug("正在更新渠道 (Veloera): {} - {}", channel.getName(), jsonBody);
+            } else {
+                log.debug("正在更新渠道 (New-API): {} - {}", channel.getName(), jsonBody);
+            }
 
             HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestMethod("PUT");
@@ -299,16 +303,15 @@ public class NewApiService {
         data.put("base_url", channel.getBaseUrl() != null ? channel.getBaseUrl() : "");
         data.put("auto_ban", channel.getAutoBan());
 
-        // Veloera 需要 groups 数组，New-API 需要 group 字符串
+        // group/groups 字段处理
+        String groupName = channel.getGroupName() != null ? channel.getGroupName() : "default";
         if (isVeloera) {
-            // Veloera 使用 groups 数组
-            String groupName = channel.getGroupName() != null ? channel.getGroupName() : "default";
+            // Veloera 同时需要 group 字符串和 groups 数组
+            data.put("group", groupName);
             data.put("groups", new String[]{groupName});
         } else {
-            // New-API 使用 group 字符串
-            if (channel.getGroupName() != null) {
-                data.put("group", channel.getGroupName());
-            }
+            // New-API 只需要 group 字符串
+            data.put("group", groupName);
         }
 
         // ID 字段 - 仅在更新时需要
@@ -335,8 +338,14 @@ public class NewApiService {
             data.put("system_prompt", ""); // Veloera 特有字段
             data.put("model_prefix", ""); // Veloera 特有字段
 
-            // Veloera 的 max_input_tokens 字段
+            // Veloera 的数值字段
             data.put("max_input_tokens", 0);
+            data.put("created_time", channel.getCreatedTime());
+            data.put("test_time", channel.getTestTime());
+            data.put("response_time", channel.getResponseTime());
+            data.put("balance", channel.getBalance());
+            data.put("balance_updated_time", channel.getBalanceUpdatedTime());
+            data.put("used_quota", channel.getUsedQuota());
         } else {
             // New-API 格式 - 仅在非空时添加
             if (channel.getOpenaiOrganization() != null) {
