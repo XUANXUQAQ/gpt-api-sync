@@ -3,6 +3,7 @@ package github.gpt.api.sync.service;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import github.gpt.api.sync.config.AppConfig;
+import github.gpt.api.sync.config.AuthHeaderType;
 import github.gpt.api.sync.model.newapi.NewApiChannel;
 import github.gpt.api.sync.model.newapi.NewApiChannelResponseWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -217,7 +218,7 @@ public class NewApiService {
      */
     public List<NewApiChannel> getAllChannels() throws IOException, URISyntaxException {
         String url = AppConfig.NEW_API_BASE_URL + "/api/channel/?page=1&page_size=100000";
-        log.info("正在从 New-API 获取渠道信息: {}", url);
+        log.info("正在从 {} 获取渠道信息: {}", AppConfig.NEW_API_AUTH_HEADER_TYPE.name(), url);
 
         HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
         connection.setRequestMethod("GET");
@@ -229,7 +230,7 @@ public class NewApiService {
 
         int responseCode = connection.getResponseCode();
         if (responseCode != 200) {
-            String errorMsg = "从 New-API 获取渠道失败. 响应码: " + responseCode;
+            String errorMsg = "从 " + AppConfig.NEW_API_AUTH_HEADER_TYPE.name() + " 获取渠道失败. 响应码: " + responseCode;
             log.error(errorMsg);
             throw new IOException(errorMsg);
         }
@@ -242,14 +243,34 @@ public class NewApiService {
             }
         }
 
-        // 将响应反序列化为 NewApiGetAllChannelsResponse 对象
-        NewApiChannelResponseWrapper apiResponse = gson.fromJson(response.toString(), NewApiChannelResponseWrapper.class);
+        List<NewApiChannel> channels;
 
-        if (apiResponse == null || apiResponse.getData() == null) {
-            throw new IOException("New-API 返回无效响应或空的 items 列表");
+        // 根据 AuthHeaderType 判断响应格式
+        if (AppConfig.NEW_API_AUTH_HEADER_TYPE == AuthHeaderType.VELOERA) {
+            // Veloera 格式: {"data": [...], "message": "", "success": true}
+            log.debug("使用 Veloera 响应格式解析");
+            Map<String, Object> apiResponse = gson.fromJson(response.toString(), new TypeToken<Map<String, Object>>() {
+            }.getType());
+
+            if (apiResponse == null || !apiResponse.containsKey("data")) {
+                throw new IOException("Veloera 返回无效响应或缺少 data 字段");
+            }
+
+            // data 字段直接是 List<NewApiChannel>
+            String dataJson = gson.toJson(apiResponse.get("data"));
+            channels = gson.fromJson(dataJson, new TypeToken<List<NewApiChannel>>() {
+            }.getType());
+        } else {
+            // New-API 格式: {"data": {"items": [...], "page": 1, ...}}
+            log.debug("使用 New-API 响应格式解析");
+            NewApiChannelResponseWrapper apiResponse = gson.fromJson(response.toString(), NewApiChannelResponseWrapper.class);
+
+            if (apiResponse == null || apiResponse.getData() == null) {
+                throw new IOException("New-API 返回无效响应或空的 items 列表");
+            }
+
+            channels = apiResponse.getData().getItems();
         }
-
-        List<NewApiChannel> channels = apiResponse.getData().getItems();
 
         log.info("成功获取到 {} 个渠道", channels != null ? channels.size() : 0);
         return channels;
